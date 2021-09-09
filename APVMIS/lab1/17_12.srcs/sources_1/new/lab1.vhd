@@ -44,13 +44,14 @@ end lab1;
 architecture Behavioral of lab1 is
 
 begin
-
-Y(1) <= not OE and ((A(1) and (not AB)) or (B(1) and AB)); 
-
-Y(2) <= not OE and ((A(2) and (not AB)) or (B(2) and AB)); 
-
-Y(3) <= not OE and ((A(3) and (not AB)) or (B(3) and AB)); 
-
-Y(4) <= not OE and ((A(4) and (not AB)) or (B(4) and AB)); 
-
+    
+    Y(1) <= not OE and ((A(1) and (not AB)) or (B(1) and AB)); 
+    
+    Y(2) <= not OE and ((A(2) and (not AB)) or (B(2) and AB)); 
+    
+    Y(3) <= not OE and ((A(3) and (not AB)) or (B(3) and AB)); 
+    
+    Y(4) <= not OE and ((A(4) and (not AB)) or (B(4) and AB)); 
+    
+        
 end Behavioral;
