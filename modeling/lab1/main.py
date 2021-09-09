@@ -20,7 +20,7 @@ def calculate_implicit_criteria():
     for i in range(0, len(sequence), 2):
         if sequence[i] ** 2 + sequence[i + 1] ** 2 < 1:
             criteria_matchers += 1
-    print('\nActual: ', 2 * criteria_matchers / len(sequence), '\nExpected: ', np.pi / 4)
+    print('\nРеальность: ', 2 * criteria_matchers / len(sequence), '\nОжидание: ', np.pi / 4)
 
 
 def calculate_period():
@@ -44,12 +44,12 @@ R = int(input("R0:"))
 a = int(input("a: "))
 m = int(input("m: "))
 calculate_sequence(a, m, R, 1000000)
-show_hist()
-
-print('\nMean: ', np.mean(sequence), '\nVariance: ', np.var(sequence), '\nStandard deviation: ', np.std(sequence))
+print('\nМат.ожидание: ', np.mean(sequence), '\nДисперсия: ', np.var(sequence), '\nОтклонение: ', np.std(sequence))
 
 calculate_implicit_criteria()
 
 period = calculate_period()
 aperiodic_interval = calculate_aperiodic_inteval(period)
-print('\nPeriod: ', period, '\nAperiodic interval: ', aperiodic_interval)
+print('\nПериод: ', period, '\nАпериодический интервал: ', aperiodic_interval)
+show_hist()
+
