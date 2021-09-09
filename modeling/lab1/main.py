@@ -45,7 +45,7 @@ def aperiodic_section_length(P):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-
+    print('\nУсловия: R0, A, M - положительные значения;\n         M обязательно больше чем A;\n')
     R = int(input("R0:"))
     a = int(input("a: "))
     m = int(input("m: "))
