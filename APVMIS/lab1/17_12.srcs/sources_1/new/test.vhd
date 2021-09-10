@@ -40,19 +40,19 @@ end test;
 architecture Behavioral of test is
   component lab1
   port (
-          A: in std_logic_vector(1 to 4);
-          B: in std_logic_vector(1 to 4);
+          A: in std_logic_vector(4 downto 1);
+          B: in std_logic_vector(4 downto 1);
           OE: in STD_LOGIC;
           AB: in STD_LOGIC;
-          Y: out std_logic_vector(1 to 4)
+          Y: out std_logic_vector(4 downto 1)
       );
 end component;
 
-        signal A: std_logic_vector(1 to 4);
-        signal B: std_logic_vector(1 to 4);
+        signal A: std_logic_vector(4 downto 1);
+        signal B: std_logic_vector(4 downto 1);
         signal OE: STD_LOGIC;
         signal AB: STD_LOGIC;
-        signal Y: std_logic_vector(1 to 4);
+        signal Y: std_logic_vector(4 downto 1);
 
 begin
 
@@ -74,7 +74,7 @@ begin
                 A <= std_logic_vector(conv_unsigned(n, 4));
                 for k in 0 to 15 loop          
                     B <= std_logic_vector(conv_unsigned(k, 4));
-                    wait for 10ns;
+                    wait for 5ns;
                 end loop;
             end loop;
         end loop;

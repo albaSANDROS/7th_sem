@@ -33,11 +33,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity lab1 is
     port (
-        A: in std_logic_vector(1 to 4);
-        B: in std_logic_vector(1 to 4);
+        A: in std_logic_vector(4 downto 1);
+        B: in std_logic_vector(4 downto 1);
         OE: in STD_LOGIC;
         AB: in STD_LOGIC;
-        Y: out std_logic_vector(1 to 4)
+        Y: out std_logic_vector(4 downto 1)
     );
 end lab1;
 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="test_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="test" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="5150735000fs"></ZoomStartTime>
+      <ZoomEndTime time="5296135001fs"></ZoomEndTime>
+      <Cursor1Time time="30000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="142"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="5" />
+   <wvobject fp_name="/test/A" type="array">
+      <obj_property name="ElementShortName">A[1:4]</obj_property>
+      <obj_property name="ObjectShortName">A[1:4]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test/B" type="array">
+      <obj_property name="ElementShortName">B[1:4]</obj_property>
+      <obj_property name="ObjectShortName">B[1:4]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test/OE" type="logic">
+      <obj_property name="ElementShortName">OE</obj_property>
+      <obj_property name="ObjectShortName">OE</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test/AB" type="logic">
+      <obj_property name="ElementShortName">AB</obj_property>
+      <obj_property name="ObjectShortName">AB</obj_property>
+   </wvobject>
+   <wvobject fp_name="/test/Y" type="array">
+      <obj_property name="ElementShortName">Y[1:4]</obj_property>
+      <obj_property name="ObjectShortName">Y[1:4]</obj_property>
+   </wvobject>
+</wave_config>
