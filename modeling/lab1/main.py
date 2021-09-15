@@ -42,7 +42,7 @@ def aperiodic_section_length(P):
             StopIteration
 
     return index + P
-# Press the green button in the gutter to run the script.
+
 if __name__ == '__main__':
 
     print('\nУсловия: R0, A, M - положительные значения;\n         M обязательно больше чем A;\n')
@@ -66,3 +66,7 @@ if __name__ == '__main__':
         print('\nПериод: ', period, '\nАпериодический интервал: ', aperiodic_section)
         show_histogram()
 
+# a = 134279
+# r0 = 1
+# m = 313107
+# n = 1000000
