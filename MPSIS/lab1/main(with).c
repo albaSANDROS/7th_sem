@@ -10,7 +10,7 @@ void sleep() {
 }
 
 #pragma vector = PORT1_VECTOR
-__interrupt void button1(void) {
+__interrupt void button1(void) { //LEDB S1 using
 	sleep();
 
 	int b1_cur_state = (P1IN & BIT7);
@@ -25,7 +25,7 @@ __interrupt void button1(void) {
 
    	b1_prev_state = b1_cur_state;
 
-	P1IES ^= BIT7;
+	P1IES ^= BIT7; //xor to BIT7 to get changes
 	P1IFG = 0;
 }
 
