@@ -33,7 +33,7 @@ int main(void) {
     		b1_cur_state = (P1IN & BIT7);
     	}
 
-    	if (b2_cur_state != b1_prev_state) {
+    	if (b2_cur_state != b2_prev_state) {
 			sleep();
 			b2_cur_state = (P2IN & BIT2);
     	}
