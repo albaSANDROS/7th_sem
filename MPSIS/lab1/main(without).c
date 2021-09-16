@@ -2,7 +2,7 @@
 
 int b1_prev_state = BIT7;
 int b2_prev_state = BIT2;
-int l1_state = 0;
+int l1_state = 0; // ON LEDA
 
 void sleep() {
 	volatile int i = 0;
