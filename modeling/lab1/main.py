@@ -65,8 +65,8 @@ if __name__ == '__main__':
         aperiodic_section = aperiodic_section_length(period)
         print('\nПериод: ', period, '\nАпериодический интервал: ', aperiodic_section)
         show_histogram()
-
-# a = 134279
-# r0 = 1
-# m = 313107
-# n = 1000000
+        
+# R0: 1
+#  a: 121297
+#  m: 987214
+#  n: 1000000
