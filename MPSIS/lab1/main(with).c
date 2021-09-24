@@ -9,7 +9,7 @@ void sleep() {
     for (i = 0; i < 1000; i++) {}
 }
 
-#pragma vector = PORT1_VECTOR
+#pragma vector = PORT1_VECTOR   // обработчик прерываний для 1 порта
 __interrupt void button1(void) { //LEDB S1 using
     sleep();
 
@@ -80,9 +80,9 @@ int main(void) {
     P1IE |= BIT7;
     P2IE |= BIT2;
 
-    __bis_SR_register(LPM0_bits + GIE);
+    __bis_SR_register(LPM0_bits + GIE); // Для разрешения прерываний необходимо воспользоваться функцией записи флага GIE в регистр состояния:
 
-    __no_operation();
+    __no_operation();                   // Без этого вызова с завершением функции main() завершится и выполнение кода в оболочке.
 
     return 0;
 }
