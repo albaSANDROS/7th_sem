@@ -1,7 +1,6 @@
 from PIL import Image
 from django.db.models.functions import math
 from numpy import asarray
-import seaborn as sn
 import cv2
 import numpy as np
 import math
@@ -38,9 +37,25 @@ def roberts(source):
                 output[x][y][z] = h
     return output
 
+def bright(source):
+    f = 180
+    g = 20
+
+    output = np.copy(source)
+    for x in range(len(source)):
+        for y in range(len(source[0])):
+            for z in range(len(source[0][0])):
+                pixel = output[x][y][z]
+                if pixel > f:
+                    pixel = 255
+                else:
+                    pixel = ((255 - g) / f) * pixel + g
+                output[x][y][z] = pixel
+    return output
+
 
 def corr(image2):
-    c = 255 / np.log(1 + np.max(image2))
+    c = int(input('Enter constant:'))
     log_image = c * (np.log(image2 + 1))
     log_image = np.array(log_image, dtype=np.uint8)
     return log_image
@@ -48,17 +63,21 @@ def corr(image2):
 
 if __name__ == '__main__':
     image = Image.open("img.jpg")
-    imagecv = cv2.imread('bad.jpg')
+    imagecv = cv2.imread('img.jpg')
 
     plt.plot(to_one_arr(asarray(image)))
     plt.show()
 
     array = asarray(image)
-    pr = roberts(array)
+    rf = roberts(array)
+    correction = corr(imagecv)
 
-    plt.plot(to_one_arr(pr))
+    plt.plot(to_one_arr(rf))
+    plt.show()
+    plt.plot(to_one_arr(correction))
     plt.show()
 
     Image.fromarray(array).save("default.jpg")
-    Image.fromarray(pr).save("roberts.jpg")
-    Image.fromarray(corr(imagecv)).save("good.jpg")
+    Image.fromarray(rf).save("roberts.jpg")
+    Image.fromarray(correction).save("corr.jpg")
+    Image.fromarray(bright(asarray(Image.open("bad.jpg")))).save("good.jpg")
