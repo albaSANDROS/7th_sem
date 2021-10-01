@@ -82,7 +82,7 @@ int main(void) {
     UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
 
     UCSCTL4 = SELM__DCOCLK;
-    UCSCTL5 = DIVM__1;                      // тут менять на 1 и 4
+    UCSCTL5 = DIVM__4;                      // тут менять на 1 и 4
 
     __no_operation();
 
