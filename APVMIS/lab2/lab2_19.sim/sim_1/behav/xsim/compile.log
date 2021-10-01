@@ -1,0 +1,4 @@
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/AlBa/lab2_19/lab2_19.srcs/sources_1/new/d.vhd" into library xil_defaultlib
+INFO: [VRFC 10-307] analyzing entity d
+INFO: [VRFC 10-163] Analyzing VHDL file "C:/Users/AlBa/lab2_19/lab2_19.srcs/sim_1/new/d_test.vhd" into library xil_defaultlib
+INFO: [VRFC 10-307] analyzing entity d_test
