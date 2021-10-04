@@ -34,7 +34,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity lab2 is
 port (
         load: in STD_LOGIC;
-        uo: in STD_LOGIC;
+        ud: in STD_LOGIC;
         clock: in STD_LOGIC;
         enp: in STD_LOGIC;
         ent: in STD_LOGIC;
@@ -71,11 +71,19 @@ begin
     
           flag <= '0';        
           
-          flag <= ((load) and (not data(1))) or 
+          flag <= ((not load) and data(1)) or 
           ((not q_temp(1)) and ((not enp) and (not ent) and load)) or 
           (load and ((not enp) or (
           not ent)) and q_temp(1));
 
+        
+        
+          counter(1) <= not (((not ud) and (q_temp(1))) or ((ud) and (not q_temp(1))));
+          counter(2) <= not (((not ud) and (q_temp(2))) or ((ud) and (not q_temp(2))));
+          counter(3) <= not (((not ud) and (q_temp(3))) or ((ud) and (not q_temp(3))));
+          counter(4) <= not (((not ud) and (q_temp(4))) or ((ud) and (not q_temp(4))));
+        
+        rco <= (not ent) and counter(1) and counter(2) and conuter(3) and counter(4);
          
     end if;
     end process;
