@@ -47,7 +47,7 @@ architecture Behavioral of lab2_test is
         );
     end component;
     
-    signal load, clock, enp, ent : STD_LOGIC := '1';
+    signal load, enp, ent : STD_LOGIC := '1';
     signal data : std_logic_vector(4 downto 1);
     signal c: STD_LOGIC := '1';
     signal rco, ud: STD_LOGIC;
@@ -60,7 +60,7 @@ begin
     
 mapping: lab2 port map(
         load => load,
-        clock => clock,
+        clock => c,
         enp => enp,
         ent => ent,
         data => data,
