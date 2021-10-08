@@ -78,8 +78,8 @@ int main(void) {
     UCSCTL5 = 0;
 
     UCSCTL1 = DCORSEL_0;
-    UCSCTL2 = FLLD__1 | FLLN4 | FLLN3 | FLLN2; // тут надо из презентации 123кГц получить
-    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
+    UCSCTL2 = FLLD__2 | FLLN2 ; // тут надо из презентации 123кГц получить
+    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__2;
 
     UCSCTL4 = SELM__DCOCLK;
     UCSCTL5 = DIVM__4;                      // тут менять на 1 и 4
