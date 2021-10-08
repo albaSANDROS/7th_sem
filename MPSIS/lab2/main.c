@@ -18,7 +18,7 @@ __interrupt void button1(void) {
         LPM2_mode = 0;
     } else
     {
-        _bis_SR_register_on_exit(LPM2_bits);
+        _bis_SR_register_on_exit(LPM2_bits); //вход в режим энергносбережения
         LPM2_mode = 1;
     }
 
@@ -48,7 +48,7 @@ __interrupt void button2(void) {
 
 
 int main(void) {
-     WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
     
     P1DIR &= ~BIT7;
     P1OUT |= BIT7;
