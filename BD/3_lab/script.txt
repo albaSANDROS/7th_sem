@@ -1,0 +1,63 @@
+
+
+INSERT INTO employee (full_name, position, gender) VALUES ('Зубаревич Иван Александрович', 'Мастер-Приемщик', 'М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Минина Дарья Сергеевна', 'Мастер-Приемщик','Ж');
+INSERT INTO employee (full_name, position, gender) VALUES ('Кисин Кирилл Александрович','Мастер', 'М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Тарасевич Андрей Сергеевич', 'Директор отдела продаж','М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Якушев Иван Евгеньевич','Продавец-консультант', 'М');
+SELECT * FROM employee;
+
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Басько Александр Сергеевич', 'basko@mail.ru', '80297778855');
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Говор Роман Алексеевич', 'govor@mail.ru', '80297778844');
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Дорох Тимофей Игоревич', 'dorokh@mail.ru', '80297778833');
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Исмаил Абдуль-Карим Хуссейнович', 'ismail@mail.ru', '80297778822');
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Осетник Дмитрий Александрович', 'osetnik@mail.ru', '80297778811');
+INSERT INTO client (full_name, "e-mail", contact_phone) VALUES ('Печков Максим Алексеевич', 'pechkov@mail.ru', '80297778800');
+SELECT * FROM client;
+
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Минск', '80297792670', '16');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Минск', '80297792671', '17');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Гомель', '80297792672', '18');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Брест', '80297792673', '19');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Брест', '80297792674', '20');
+SELECT * FROM branch;
+
+INSERT INTO repair (name, cost, date_of_completion) VALUES ('Замена масла', '100', DATE '2015-12-17');
+INSERT INTO repair (name, cost, date_of_completion) VALUES ('Диагностика подвески', '150', DATE '2016-12-17');
+INSERT INTO repair (name, cost, date_of_completion) VALUES ('Замена фильтров', '60', DATE '2017-12-17');
+INSERT INTO repair (name, cost, date_of_completion) VALUES ('Замена АБС', '250', DATE '2018-12-17');
+INSERT INTO repair (name, cost, date_of_completion) VALUES ('Замена двигателя', '1000', DATE '2019-12-17');
+SELECT * FROM repair;
+
+INSERT INTO spare_part ("Number", manufacturer, code) VALUES ('66666', 'FR', '16641');
+INSERT INTO spare_part ("Number", manufacturer, code) VALUES ('77777', 'DE', '16642');
+INSERT INTO spare_part ("Number", manufacturer, code) VALUES ('88888', 'BR', '16643');
+INSERT INTO spare_part ("Number", manufacturer, code) VALUES ('99999', 'RU', '16644');
+SELECT * FROM spare_part;
+
+INSERT INTO type (description, category) VALUES ('Подвеска', 'Пружины задние');
+INSERT INTO type (description, category) VALUES  ('Салон', 'Коврики');
+INSERT INTO type (description, category) VALUES  ('Салон', 'Ароматизатор елочка');
+INSERT INTO type (description, category) VALUES  ('Освещение', 'Лампа основная');
+INSERT INTO type (description, category) VALUES  ('Подвеска', 'Подшипник');
+SELECT * FROM type;
+
+INSERT INTO used (instrument, name, code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt','Молоток', '11111', '12', '9');
+INSERT INTO used (instrument, name, code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt', 'Отвертка', '22222', '13', '10');
+INSERT INTO used (instrument, name, code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt', 'Болгарка', '33333', '14', '11');
+INSERT INTO used (instrument, name, code, repair_repair_id, spare_part_spare_part_id) VALUES ('Bosch', 'Дрель', '44444', '15', '12');
+INSERT INTO used (instrument, name, code, repair_repair_id, spare_part_spare_part_id) VALUES ('Bosch', 'Сварка', '55555', '11', '11');
+SELECT * FROM used;
+
+
+create table something
+(
+	id serial
+		constraint something_pk
+			primary key,
+	text varchar not null
+);
+
+SELECT * FROM something;
+DROP TABLE something;
+SELECT * FROM something;
