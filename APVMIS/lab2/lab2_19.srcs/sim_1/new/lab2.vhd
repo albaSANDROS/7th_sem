@@ -66,8 +66,7 @@ begin
 
         data_temp(1) <= ((not load) and data(1)) or
           ((not q_temp(1)) and ((not enp) and (not ent) and load)) or 
-          (load and ((not enp) or (
-          not ent)) and q_temp(1));
+          (load and (enp or ent) and q_temp(1));
 
     d1 : d port map (
         set => setc,
