@@ -1,4 +1,4 @@
-#include <msp430.h> 
+#include <msp430.h>
 
 int LPM2_mode = 0;
 int change_frequency_mode = 0;
@@ -49,7 +49,7 @@ __interrupt void button2(void) {
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
-    
+
     P1DIR &= ~BIT7;
     P1OUT |= BIT7;
     P1REN |= BIT7;
@@ -78,14 +78,13 @@ int main(void) {
     UCSCTL5 = 0;
 
     UCSCTL1 = DCORSEL_0;
-    UCSCTL2 = FLLD__2 | FLLN2 ; // тут надо из презентации 123кГц получить
-    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__2;
+    UCSCTL2 = FLLD__1 | FLLN1 | FLLN2 | FLLN3; // тут надо из презентации 123кГц получить
+    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__4;
 
     UCSCTL4 = SELM__DCOCLK;
-    UCSCTL5 = DIVM__4;                      // тут менять на 1 и 4
+    UCSCTL5 = DIVM__1;                      // тут менять на 1 и 4
 
     __no_operation();
 
     return 0;
 }
-
