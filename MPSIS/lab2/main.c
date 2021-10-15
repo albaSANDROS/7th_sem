@@ -77,9 +77,9 @@ int main(void) {
     UCSCTL4 = 0;
     UCSCTL5 = 0;
 
-    UCSCTL1 = DCORSEL_0;
-    UCSCTL2 = FLLD__1 | FLLN1 | FLLN2 | FLLN3; // тут надо из презентации 123кГц получить
-    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__4;
+    UCSCTL1 = DCORSEL_1;
+    UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2; // тут надо из презентации 123кГц получить
+    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
 
     UCSCTL4 = SELM__DCOCLK;
     UCSCTL5 = DIVM__1;                      // тут менять на 1 и 4
