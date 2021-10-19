@@ -82,7 +82,7 @@ int main(void) {
     UCSCTL5 = 0;
 
     //dclock 1.23Mhz
-    UCSCTL1 = DCORSEL_1;
+    UCSCTL1 = DCORSEL_2;    //Выбор диапазона частот DCO
     UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2; 
     UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
 
