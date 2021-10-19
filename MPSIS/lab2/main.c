@@ -38,7 +38,7 @@ __interrupt void button2(void) {
     {
         sleep(300);
         UCSCTL4 = SELM__REFOCLK;
-        UCSCTL5 = DIVM__16;
+        UCSCTL5 = DIVM__16; //источник
         change_frequency_mode = 1;
     }
 
@@ -50,6 +50,7 @@ __interrupt void button2(void) {
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;  // Stop watchdog timer
 
+    //init buttons
     P1DIR &= ~BIT7;
     P1OUT |= BIT7;
     P1REN |= BIT7;
@@ -60,6 +61,7 @@ int main(void) {
 
     __bis_SR_register(GIE);
 
+    //interrupts on buttons
     P1IES |= BIT7;
     P1IFG &= ~BIT7;
     P1IE |= BIT7;
@@ -68,20 +70,26 @@ int main(void) {
     P2IFG &= ~BIT2;
     P2IE |= BIT2;
 
+    //pins for MCLK reading
     P7DIR |= BIT7;
     P7SEL |= BIT7;
 
+    //CLK registers managment
     UCSCTL1 = 0;
     UCSCTL2 = 0;
     UCSCTL3 = 0;
     UCSCTL4 = 0;
     UCSCTL5 = 0;
 
+    //dclock 1.23Mhz
     UCSCTL1 = DCORSEL_1;
-    UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2; // тут надо из презентации 123кГц получить
+    UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2; 
     UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
 
+    
     UCSCTL4 = SELM__DCOCLK;
+    
+    //MCLK div
     UCSCTL5 = DIVM__1;                      // тут менять на 1 и 4
 
     __no_operation();
