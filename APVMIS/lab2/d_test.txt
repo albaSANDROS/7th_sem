@@ -56,7 +56,7 @@ end component;
         signal q: STD_LOGIC;
         signal not_q: STD_LOGIC;
         
-        constant clkhalf : time := 10 ns;
+        constant clkhalf : time := 7 ns;
 
 begin
 
