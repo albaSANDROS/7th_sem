@@ -12,9 +12,9 @@ void sleep(int time) {
 __interrupt void button1(void) {
     sleep(1000);
 
-    if (LPM2_mode)
+    if (LPM2_mode)                            //clear / set
     {
-        _bic_SR_register_on_exit(LPM2_bits);
+        _bic_SR_register_on_exit(LPM2_bits);  //выход из режима энергносбережения 
         LPM2_mode = 0;
     } else
     {
@@ -82,15 +82,15 @@ int main(void) {
     UCSCTL5 = 0;
 
     //dclock 1.23Mhz
-    UCSCTL1 = DCORSEL_2;    //Выбор диапазона частот DCO
-    UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2; 
-    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;
+    UCSCTL1 = DCORSEL_2;                        //Выбор диапазона частот DCO
+    UCSCTL2 = FLLD__1 | FLLN5 | FLLN0 | FLLN2;  //Делитель FLL и Множитель DCO.
+    UCSCTL3 = SELREF__XT1CLK | FLLREFDIV__1;    //Выбор источника для FLL и Делитель частоты FLL
 
     
-    UCSCTL4 = SELM__DCOCLK;
+    UCSCTL4 = SELM__DCOCLK;                     //Выбор источника для ACLK:
     
     //MCLK div
-    UCSCTL5 = DIVM__1;                      // тут менять на 1 и 4
+    UCSCTL5 = DIVM__1;                          //Делитель MCLK
 
     __no_operation();
 
