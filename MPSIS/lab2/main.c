@@ -90,7 +90,7 @@ int main(void) {
     UCSCTL4 = SELM__DCOCLK;                     //Выбор источника для ACLK:
     
     //MCLK div
-    UCSCTL5 = DIVM__1;                          //Делитель MCLK
+    UCSCTL5 = DIVM__4;                          //Делитель MCLK
 
     __no_operation();
 
