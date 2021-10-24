@@ -1,0 +1,291 @@
+create table client
+(
+    id            serial
+        constraint client_pk
+            primary key,
+    client_full_name     varchar(4000),
+    "e-mail"      varchar,
+    contact_phone varchar(4000)
+);
+
+alter table client
+    owner to postgres;
+
+create table employee
+(
+    id        serial
+        constraint employee_pk
+            primary key,
+    full_name varchar(4000),
+    position  varchar(4000),
+    gender    varchar(1)
+);
+
+alter table employee
+    owner to postgres;
+
+create table branch
+(
+    id                   serial
+        constraint branch_pk
+            primary key,
+    place                varchar,
+    contact_phone        varchar,
+    employee_employee_id integer
+        constraint branch_employee_fk
+            references employee
+);
+
+alter table branch
+    owner to postgres;
+
+create table go_to
+(
+    branch_branch_id integer not null
+        constraint go_to_branch_fk
+            references branch,
+    client_client_id integer not null
+        constraint go_to_client_fk
+            references client,
+    constraint go_to_pk
+        primary key (branch_branch_id, client_client_id)
+);
+
+alter table go_to
+    owner to postgres;
+
+create table repair
+(
+    id                 serial
+        constraint repair_pk
+            primary key,
+    repair_name               varchar(4000),
+    cost               integer,
+    date_of_completion date
+);
+
+alter table repair
+    owner to postgres;
+
+create table made_by
+(
+    repair_repair_id     integer not null
+        constraint made_by_repair_fk
+            references repair,
+    employee_employee_id integer not null
+        constraint made_by_employee_fk
+            references employee,
+    constraint made_by_pk
+        primary key (repair_repair_id, employee_employee_id)
+);
+
+alter table made_by
+    owner to postgres;
+
+create table orders
+(
+    client_client_id integer not null
+        constraint order_client_fk
+            references client,
+    repair_repair_id integer not null
+        constraint order_repair_fk
+            references repair,
+    constraint order_pk
+        primary key (client_client_id, repair_repair_id)
+);
+
+alter table orders
+    owner to postgres;
+
+create table spare_part
+(
+    id           serial
+        constraint spare_part_pk
+            primary key,
+    "Number"     integer,
+    manufacturer varchar(2),
+    part_code         varchar(4000)
+);
+
+alter table spare_part
+    owner to postgres;
+
+create table "consists of"
+(
+    repair_repair_id         integer not null
+        constraint usedv1_repair_fk
+            references repair,
+    spare_part_spare_part_id integer not null
+        constraint usedv1_spare_part_fk
+            references spare_part,
+    constraint usedv1_pk
+        primary key (repair_repair_id, spare_part_spare_part_id)
+);
+
+alter table "consists of"
+    owner to postgres;
+
+create table type
+(
+    id          serial
+        constraint type_pk
+            primary key,
+    description varchar(4000),
+    category    varchar(4000)
+);
+
+alter table type
+    owner to postgres;
+
+create table maked_by
+(
+    spare_part_spare_part_id integer not null
+        constraint made_byv1_spare_part_fk
+            references spare_part,
+    type_type_id             integer not null
+        constraint made_byv1_type_fk
+            references type,
+    constraint made_byv1_pk
+        primary key (spare_part_spare_part_id, type_type_id)
+);
+
+alter table maked_by
+    owner to postgres;
+
+create table used
+(
+    instrument               varchar(4000),
+    used_name                     varchar(4000),
+    instrument_code                     varchar(4000),
+    repair_repair_id         integer
+        constraint used_repair_fk
+            references repair,
+    spare_part_spare_part_id integer
+        constraint used_spare_part_fk
+            references spare_part
+);
+INSERT INTO employee (full_name, position, gender) VALUES ('Зубаревич Иван Александрович', 'Мастер-Приемщик', 'М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Минина Дарья Сергеевна', 'Мастер-Приемщик','Ж');
+INSERT INTO employee (full_name, position, gender) VALUES ('Кисин Кирилл Александрович','Мастер', 'М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Тарасевич Андрей Сергеевич', 'Директор отдела продаж','М');
+INSERT INTO employee (full_name, position, gender) VALUES ('Якушев Иван Евгеньевич','Продавец-консультант', 'М');
+SELECT * FROM employee;
+
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Минск', '80297792670', '1');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Минск', '80297792671', '2');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Гомель', '80297792672', '3');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Брест', '80297792673', '4');
+INSERT INTO branch (place, contact_phone, employee_employee_id) VALUES ('Брест', '80297792674', '5');
+SELECT * FROM branch;
+
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Басько Александр Сергеевич', 'basko@mail.ru', '80297778855');
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Говор Роман Алексеевич', 'govor@mail.ru', '80297778844');
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Дорох Тимофей Игоревич', 'dorokh@mail.ru', '80297778833');
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Исмаил Абдуль-Карим Хуссейнович', 'ismail@mail.ru', '80297778822');
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Осетник Дмитрий Александрович', 'osetnik@mail.ru', '80297778811');
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Печков Максим Алексеевич', 'pechkov@mail.ru', '80297778800');
+SELECT * FROM client;
+
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Замена масла', '100', DATE '2015-12-17');
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Диагностика подвески', '150', DATE '2016-12-17');
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Замена фильтров', '60', DATE '2017-12-17');
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Замена АБС', '250', DATE '2018-12-17');
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Замена двигателя', '1000', DATE '2019-12-17');
+SELECT * FROM repair;
+
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('66666', 'FR', '16641');
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('77777', 'DE', '16642');
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('88888', 'BR', '16643');
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('99999', 'RU', '16644');
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('55555', 'RU', '16640');
+SELECT * FROM spare_part;
+
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('1', '1');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('2', '2');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('3', '3');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('4', '1');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('5', '4');
+SELECT * FROM "consists of";
+
+
+
+
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('1','2');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('2','3');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('3','4');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('4','5');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('5','1');
+SELECT * FROM made_by;
+
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('1','2');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('2','4');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('3','1');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('4','5');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('2','3');
+SELECT * FROM maked_by;
+
+
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('1', '3');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('2', '2');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('3', '4');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('4', '1');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('5', '5');
+SELECT * FROM orders;
+
+
+
+
+
+INSERT INTO type (description, category) VALUES ('Подвеска', 'Пружины задние');
+INSERT INTO type (description, category) VALUES  ('Салон', 'Коврики');
+INSERT INTO type (description, category) VALUES  ('Салон', 'Ароматизатор елочка');
+INSERT INTO type (description, category) VALUES  ('Освещение', 'Лампа основная');
+INSERT INTO type (description, category) VALUES  ('Подвеска', 'Подшипник');
+SELECT * FROM type;
+
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt','Молоток', '11111', '1', '5');
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt', 'Отвертка', '22222', '2', '4');
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('DeWalt', 'Болгарка', '33333', '3', '3');
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('Bosch', 'Дрель', '44444', '4', '2');
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('Bosch', 'Сварка', '55555', '5', '1');
+SELECT * FROM used;
+
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('3', '5');
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('5', '4');
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('4', '3');
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('6', '2');
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('7', '1');
+SELECT * FROM go_to;
+
+-- 1. Для каждого сотрудника уникально вывести список категорий, с которыми он взаимодействовал
+
+select DISTINCT
+  full_name, string_agg(distinct category, ',' order by category asc) as category from type
+    join maked_by mb on type.id = mb.type_type_id
+    join spare_part sp on mb.spare_part_spare_part_id = sp.id
+    join used u on sp.id = u.spare_part_spare_part_id
+    join repair r on u.repair_repair_id = r.id
+    join made_by m on r.id = m.repair_repair_id
+    join employee e on m.employee_employee_id = e.id
+    group by full_name;
+
+
+-- 2. Для запчастей, производитель которой содержит последовательность из 3 букв (выбрать),
+-- вывести филиалы, на которых они были использованы, в порядке возрастания их номеров
+
+SELECT place, "Number", manufacturer FROM spare_part
+    join used u on spare_part.id = u.spare_part_spare_part_id
+    join repair r on r.id = u.repair_repair_id
+    join made_by mb on r.id = mb.repair_repair_id
+    join employee e on mb.employee_employee_id = e.id
+    join branch b on e.id = b.employee_employee_id
+    where manufacturer ilike 'RU'
+    ORDER BY "Number";
+
+-- 3. Вывести все использования сотрудниками инструметов в формате:
+-- "ФИО использовал название_инструмента дата_использования"
+
+SELECT DISTINCT(concat ( full_name, ' использовал ', used_name, ' ', date_of_completion) )from repair
+    join made_by mb on repair.id = mb.repair_repair_id
+    join used u on repair.id = u.repair_repair_id
+    join employee e on mb.employee_employee_id = e.id;
