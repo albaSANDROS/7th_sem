@@ -87,7 +87,7 @@ def print_matrix(mx):
 
 
 def print_images(noise, source, per):
-    res = np.where(noise == -1, ' ', 0).reshape(10, 10)
+    res = np.where(noise == -1, ' ', 'o').reshape(10, 10)
     print(f"Noise is {per}%")
     print_matrix(res)
     print("-" * 128)
@@ -96,7 +96,7 @@ def print_images(noise, source, per):
         print("-" * 128)
         print("-" * 128)
         return
-    source = np.where(source.reshape(10, 10) == -1, ' ', 0)
+    source = np.where(source.reshape(10, 10) == -1, ' ', 'o')
 
     print_matrix(source)
     print("-" * 128)
