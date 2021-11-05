@@ -1,0 +1,36 @@
+-- 1. Для каждого филиала посчитать приход денежных средств за предыдущий месяц
+
+SELECT place, sum(cost) FROM repair
+
+JOIN made_by mb on repair.id = mb.repair_repair_id
+JOIN employee e on mb.employee_employee_id = e.id
+JOIN branch b on e.id = b.employee_employee_id
+
+WHERE  repair.date_of_completion < current_date - INTERVAL '2 YEAR'
+
+group by place;
+
+-- 2. Рассчитать, сколько в среднем категорий деталей используется в ремонте.
+--    Расчет производить на основании выборки за последний год
+
+SELECT category, avg(type_type_id) FROM maked_by
+
+JOIN type t on maked_by.type_type_id = t.id
+JOIN spare_part sp on maked_by.spare_part_spare_part_id = sp.id
+JOIN "consists of" "c o" on sp.id = "c o".spare_part_spare_part_id
+JOIN repair r on "c o".repair_repair_id = r.id
+
+WHERE  r.date_of_completion < current_date - INTERVAL '2 YEAR'
+
+group by category;
+
+-- 3. Для каждого сотрудника вывести все запчасти,
+--    которые он использовал реже всего в ремонте (но использовал хотя бы раз)
+
+SELECT full_name, min(used_name) FROM used
+
+JOIN repair r on used.repair_repair_id = r.id
+JOIN made_by mb on r.id = mb.repair_repair_id
+JOIN employee e on mb.employee_employee_id = e.id
+
+group by full_name;
