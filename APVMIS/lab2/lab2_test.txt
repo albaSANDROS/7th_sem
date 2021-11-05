@@ -18,9 +18,11 @@
 -- 
 ----------------------------------------------------------------------------------
 
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -53,11 +55,16 @@ architecture Behavioral of lab2_test is
     signal rco, ud: STD_LOGIC;
     signal q: std_logic_vector(4 downto 1);
     constant clk_period : time := 20 ns;
-        
+    file inputFile : text;
+    file resultFile : text;
+    signal Y: STD_LOGIC_VECTOR (5 downto 1);
+
 begin
-
-
-    
+Y(1) <= q(1);
+            Y(2) <= q(2);
+            Y(3) <= q(3);
+            Y(4) <= q(4);
+            Y(5) <= rco;
 mapping: lab2 port map(
         load => load,
         clock => c,
@@ -68,44 +75,715 @@ mapping: lab2 port map(
         ql => q,
         ud => ud
       );
-
+      
+    --begin
+      process
+            variable inputLine : line;
+            variable input : std_logic_vector(9 downto 1);
+            variable result : std_logic_vector(5 downto 1);
+      begin
+            
+        file_open(inputFile, "INPUT_2.txt", write_mode);
+        file_open(resultFile, "RESULT_2.txt", write_mode);
+        --wait for 10 ns;
+        for i in 0 to 600 loop
+        
+            input := (load, ud, c, enp, ent, data(1), data(2), data(3), data(4));
+            write(inputLine, input);
+            writeline(inputFile, inputLine);
+            --wait for 5 ns;
+            
+            
+            write(inputLine, Y);
+            writeline(resultFile, inputLine);
+        wait for 5 ns;
+            
+        
+        end loop;
+        
+        file_close(inputFile);
+        file_close(resultFile);
+        
+        wait;
+      
+      end process;
+              
 c <= not c after 10ns; 
 
       process 
-      begin
-      
-          wait for 10ns;
+
+          begin
+
+          --wait for 10ns;
           
           load <= '0';
-          data(1) <= '1';
+          data(1) <= '0';
           data(2) <= '0';
-          data(3) <= '1';
-          data(4) <= '1';
+          data(3) <= '0';
+          data(4) <= '0';
           ud <= '1';
           enp <= '0';
           ent <= '0';
+
+          wait for 20ns;
+          enp <= '1';
+          ent <= '0';
           
-          wait for 25ns;
+          wait for 20ns;
+          enp <= '1';
+          ent <= '1';
+          wait for 20ns;
+          enp <= '0';
+          ent <= '1';
+                      
+          wait for 20ns;
           
-            load <= '1';
-    --      
-              wait for 85ns;
-              
-              enp <= '1';
-              ent <= '1';
-              
-              wait for 20ns;
-              
-              ud <= '0';
-              
-              wait for 20ns;
+          load <= '1';
+ 
+          wait for 20ns;
+           
+           enp <= '1';
+           ent <= '1';
+           
+          wait for 20ns;
+           
+          ud <= '0';
+           
+          wait for 20ns;
+                     
+          enp <= '0';
+          ent <= '0';
+           
+          wait for 20ns;
+           
+          enp <= '1';
+          ent <= '0';
+          
+          wait for 20ns;
+            
+          enp <= '0';
+          ent <= '1';
+          
+          wait for 20ns;
+          
+          ud <= '1';
+          
+          wait for 20ns;
+          
+          enp <= '1';
+          ent <= '0';
                         
-              enp <= '0';
-              ent <= '0';
-             
-            wait for 100ns;
-     
+          wait for 20ns;
+                        
+          enp <= '0';
+          ent <= '1';
           
+          wait for 20ns;
+          enp <= '0';
+          ent <= '0';
+          
+          --wait for 20ns;
+                    load <= '0';
+                    data(1) <= '1';
+                    data(2) <= '0';
+                    data(3) <= '0';
+                    data(4) <= '0';
+                    ud <= '1';
+                    enp <= '0';
+                    ent <= '0';
+          
+                    wait for 20ns;
+                    enp <= '1';
+                    ent <= '0';
+                    
+                    wait for 20ns;
+                    enp <= '1';
+                    ent <= '1';
+                    wait for 20ns;
+                    enp <= '0';
+                    ent <= '1';
+                                
+                    wait for 20ns;
+                    
+                    load <= '1';
+           
+                    wait for 20ns;
+                     
+                     enp <= '1';
+                     ent <= '1';
+                     
+                    wait for 20ns;
+                     
+                    ud <= '0';
+                     
+                    wait for 20ns;
+                               
+                    enp <= '0';
+                    ent <= '0';
+                     
+                    wait for 20ns;
+                     
+                    enp <= '1';
+                    ent <= '0';
+                    
+                    wait for 20ns;
+                      
+                    enp <= '0';
+                    ent <= '1';
+                    
+                    wait for 20ns;
+                    
+                    ud <= '1';
+                    
+                    wait for 20ns;
+                    
+                    enp <= '1';
+                    ent <= '0';
+                                  
+                    wait for 20ns;
+                                  
+                    enp <= '0';
+                    ent <= '1';
+                    
+                    wait for 20ns;
+                    enp <= '0';
+                    ent <= '0';
+                    
+                    wait for 20ns;
+                 load <= '0';
+                 data(1) <= '1';
+                 data(2) <= '1';
+                 data(3) <= '0';
+                 data(4) <= '0';
+                 ud <= '1';
+                 enp <= '0';
+                 ent <= '0';
+                 
+                 wait for 20ns;
+                 enp <= '1';
+                 ent <= '0';
+                 
+                 wait for 20ns;
+                 enp <= '1';
+                 ent <= '1';
+                 wait for 20ns;
+                 enp <= '0';
+                 ent <= '1';
+                             
+                 wait for 20ns;
+                 
+                 load <= '1';
+                 
+                 wait for 20ns;
+                  
+                  enp <= '1';
+                  ent <= '1';
+                  
+                 wait for 20ns;
+                  
+                 ud <= '0';
+                  
+                 wait for 20ns;
+                            
+                 enp <= '0';
+                 ent <= '0';
+                  
+                 wait for 20ns;
+                  
+                 enp <= '1';
+                 ent <= '0';
+                 
+                 wait for 20ns;
+                   
+                 enp <= '0';
+                 ent <= '1';
+                 
+                 wait for 20ns;
+                 
+                 ud <= '1';
+                 
+                 wait for 20ns;
+                 
+                 enp <= '1';
+                 ent <= '0';
+                               
+                 wait for 20ns;
+                               
+                 enp <= '0';
+                 ent <= '1';
+                 
+                 wait for 20ns;
+                 enp <= '0';
+                 ent <= '0';
+                 wait for 20ns;
+          
+            load <= '0';
+            data(1) <= '0';
+            data(2) <= '0';
+            data(3) <= '1';
+            data(4) <= '0';
+            ud <= '1';
+            enp <= '0';
+            ent <= '0';
+            
+            wait for 20ns;
+            enp <= '1';
+            ent <= '0';
+            
+            wait for 20ns;
+            enp <= '1';
+            ent <= '1';
+            wait for 20ns;
+            enp <= '0';
+            ent <= '1';
+                        
+            wait for 20ns;
+            
+            load <= '1';
+            
+            wait for 20ns;
+             
+             enp <= '1';
+             ent <= '1';
+             
+            wait for 20ns;
+             
+            ud <= '0';
+             
+            wait for 20ns;
+                       
+            enp <= '0';
+            ent <= '0';
+             
+            wait for 20ns;
+             
+            enp <= '1';
+            ent <= '0';
+            
+            wait for 20ns;
+              
+            enp <= '0';
+            ent <= '1';
+            
+            wait for 20ns;
+            
+            ud <= '1';
+            
+            wait for 20ns;
+            
+            enp <= '1';
+            ent <= '0';
+                          
+            wait for 20ns;
+                          
+            enp <= '0';
+            ent <= '1';
+            
+            wait for 20ns;
+            enp <= '0';
+            ent <= '0';
+            load <= '0';
+    data(1) <= '0';
+    data(2) <= '1';
+    data(3) <= '1';
+    data(4) <= '0';
+    ud <= '1';
+    enp <= '0';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '1';
+    wait for 20ns;
+    enp <= '0';
+    ent <= '1';
+                
+    wait for 20ns;
+    
+    load <= '1';
+    
+    wait for 20ns;
+     
+     enp <= '1';
+     ent <= '1';
+     
+    wait for 20ns;
+     
+    ud <= '0';
+     
+    wait for 20ns;
+               
+    enp <= '0';
+    ent <= '0';
+     
+    wait for 20ns;
+     
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+      
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    
+    ud <= '1';
+    
+    wait for 20ns;
+    
+    enp <= '1';
+    ent <= '0';
+                  
+    wait for 20ns;
+                  
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    enp <= '0';
+    ent <= '0';
+    
+    wait for 20ns;
+    
+    load <= '0';
+    data(1) <= '1';
+    data(2) <= '1';
+    data(3) <= '1';
+    data(4) <= '0';
+    ud <= '1';
+    enp <= '0';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '1';
+    wait for 20ns;
+    enp <= '0';
+    ent <= '1';
+                
+    wait for 20ns;
+    
+    load <= '1';
+    
+    wait for 20ns;
+     
+     enp <= '1';
+     ent <= '1';
+     
+    wait for 20ns;
+     
+    ud <= '0';
+     
+    wait for 20ns;
+               
+    enp <= '0';
+    ent <= '0';
+     
+    wait for 20ns;
+     
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+      
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    
+    ud <= '1';
+    
+    wait for 20ns;
+    
+    enp <= '1';
+    ent <= '0';
+                  
+    wait for 20ns;
+                  
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    enp <= '0';
+    ent <= '0';
+    
+    wait for 20ns;
+    load <= '0';
+    data(1) <= '0';
+    data(2) <= '0';
+    data(3) <= '0';
+    data(4) <= '1';
+    ud <= '1';
+    enp <= '0';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+    enp <= '1';
+    ent <= '1';
+    wait for 20ns;
+    enp <= '0';
+    ent <= '1';
+                
+    wait for 20ns;
+    
+    load <= '1';
+    
+    wait for 20ns;
+     
+     enp <= '1';
+     ent <= '1';
+     
+    wait for 20ns;
+     
+    ud <= '0';
+     
+    wait for 20ns;--90
+               
+    enp <= '0';
+    ent <= '0';
+     
+    wait for 20ns;
+     
+    enp <= '1';
+    ent <= '0';
+    
+    wait for 20ns;
+      
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    
+    ud <= '1';
+    
+    wait for 20ns;
+    
+    enp <= '1';
+    ent <= '0';
+                  
+    wait for 20ns;
+                  
+    enp <= '0';
+    ent <= '1';
+    
+    wait for 20ns;
+    enp <= '0';
+    ent <= '0';
+    wait for 20ns;
+ load <= '0';
+ data(1) <= '1';
+ data(2) <= '0';
+ data(3) <= '0';
+ data(4) <= '1';
+ ud <= '1';
+ enp <= '0';
+ ent <= '0';
+
+ wait for 20ns;
+ enp <= '1';
+ ent <= '0';
+ 
+ wait for 20ns;
+ enp <= '1';
+ ent <= '1';
+ wait for 20ns;--100
+ enp <= '0';
+ ent <= '1';
+             
+ wait for 20ns;
+ 
+ load <= '1';
+
+ wait for 20ns;
+  
+  enp <= '1';
+  ent <= '1';
+  
+ wait for 20ns;
+  
+ ud <= '0';
+  
+ wait for 20ns;
+            
+ enp <= '0';
+ ent <= '0';
+  
+ wait for 20ns;
+  
+ enp <= '1';
+ ent <= '0';
+ 
+ wait for 20ns;
+   
+ enp <= '0';
+ ent <= '1';
+ 
+ wait for 20ns;
+ 
+ ud <= '1';
+ 
+ wait for 20ns;
+ 
+ enp <= '1';
+ ent <= '0';
+               
+ wait for 20ns;
+               
+ enp <= '0';
+ ent <= '1';
+ 
+ wait for 20ns;
+ enp <= '0';
+ ent <= '0';
+     wait for 20ns;
+load <= '0';
+data(1) <= '1';
+data(2) <= '1';
+data(3) <= '0';
+data(4) <= '1';
+ud <= '1';
+enp <= '0';
+ent <= '0';
+
+wait for 20ns;
+enp <= '1';
+ent <= '0';
+
+wait for 20ns;
+enp <= '1';
+ent <= '1';
+wait for 20ns;
+enp <= '0';
+ent <= '1';
+          
+wait for 20ns;
+
+load <= '1';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '1';
+
+wait for 20ns;
+
+ud <= '0';
+
+wait for 20ns;
+         
+enp <= '0';
+ent <= '0';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '0';
+
+wait for 20ns;
+
+enp <= '0';
+ent <= '1';
+
+wait for 20ns;
+
+ud <= '1';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '0';
+            
+wait for 20ns;
+            
+enp <= '0';
+ent <= '1';
+
+wait for 20ns;
+enp <= '0';
+ent <= '0';
+    wait for 20ns;
+load <= '0';
+data(1) <= '1';
+data(2) <= '1';
+data(3) <= '1';
+data(4) <= '1';
+ud <= '1';
+enp <= '0';
+ent <= '0';
+
+wait for 20ns;
+enp <= '1';
+ent <= '0';
+
+wait for 20ns;
+enp <= '1';
+ent <= '1';
+wait for 20ns;
+enp <= '0';
+ent <= '1';
+         
+wait for 20ns;
+
+load <= '1';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '1';
+
+wait for 20ns;
+
+ud <= '0';
+
+wait for 20ns;
+        
+enp <= '0';
+ent <= '0';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '0';
+
+wait for 20ns;
+
+enp <= '0';
+ent <= '1';
+
+wait for 20ns;
+
+ud <= '1';
+
+wait for 20ns;
+
+enp <= '1';
+ent <= '0';
+           
+wait for 20ns;
+           
+enp <= '0';
+ent <= '1';
+
+wait for 20ns;  --139
+enp <= '0';
+ent <= '0';
+          wait for 100ns;
+     
+          wait;
+
       end process;      
       
 
