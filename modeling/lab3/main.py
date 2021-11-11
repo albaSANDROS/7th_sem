@@ -5,6 +5,7 @@ import random
 def simulate_teoriya():
     q1 = 0.6
     q2 = 0.6
+    #q2 = 1
     p1 = 1 - q1
     p2 = 1 - q2
 
@@ -82,14 +83,11 @@ def simulate_teoriya():
 def simulate_praktika():
     Times = 1_000_000
 
-    q1 = 0
-    q2 = 0
 
     P1_v = 0.4
     P2_v = 0.4
 
-    Q1_v = 1 - P1_v
-    Q2_v = 1 - P2_v
+
 
     state = "1000"  # P1
 
@@ -117,7 +115,7 @@ def simulate_praktika():
     for i in range(Times):
         q1 = random.uniform(0.0, 1) >= P1_v
         q2 = random.uniform(0.0, 1) >= P2_v
-
+        #q2= 1 
         if (state[0] == '0'):
             Lc += 1
             Pbl += 1
