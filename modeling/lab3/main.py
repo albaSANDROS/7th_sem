@@ -1,347 +1,328 @@
-import random as rand
-
-
-def event(probability):
-    return rand.uniform(0, 1) <= probability
-
-
-print('==============================Lab3==============================')
-
-# initial parameters
-pi1 = 0
-pi2 = 0
-n = 1  # queue size
-iters_num = 0
-
-# current values
-source_state = 2  # Amount of cycles before the new request
-pi1_state = 0
-pi2_state = 0
-n_state = 0
-
-# flags
-p1_event = False
-p2_event = False
-
-request_from_pi1 = False
-request_from_queue = False
-request_from_source = False
-
-print('=Enter the values:==============================================')
-while (1):
-    pi1 = input('Enter pi1: ')
-    try:
-        pi1 = float(pi1)
-        if pi1 >= 0.0 and pi1 <= 1.0:
-            break
-    except ValueError:
-        pass
-    print('Check your input!')
-
-while (1):
-    pi2 = input('Enter pi2: ')
-    try:
-        pi2 = float(pi2)
-        if pi2 >= 0.0 and pi2 <= 1.0:
-            break
-    except ValueError:
-        pass
-    print('Check your input!')
-
-while (1):
-    iters_num = input('Enter amount of iterations: ')
-    try:
-        iters_num = int(iters_num)
-        if iters_num >= 10 and iters_num <= 1000000:
-            break
-    except ValueError:
-        pass
-    print('Check your input!')
-
-print('================================================================')
-
-print('|(2)\t|(pi1)\t|[n]\t|(pi2)\t|')
-
-state2100 = '|2\t|1\t|0\t|0\t|'
-state1001 = '|1\t|0\t|0\t|1\t|'
-state1100 = '|1\t|1\t|0\t|0\t|'
-state2101 = '|2\t|1\t|0\t|1\t|'
-state1011 = '|1\t|0\t|1\t|1\t|'
-state0100 = '|0\t|1\t|0\t|0\t|'
-state1111 = '|1\t|1\t|1\t|1\t|'
-state0101 = '|0\t|1\t|0\t|1\t|'
-state2111 = '|2\t|1\t|1\t|1\t|'
-state1101 = '|1\t|1\t|0\t|1\t|'
-
-state2100_counter = 0
-state1001_counter = 0
-state1100_counter = 0
-state2101_counter = 0
-state1011_counter = 0
-state0100_counter = 0
-state1111_counter = 0
-state0101_counter = 0
-state2111_counter = 0
-state1101_counter = 0
-
-
-processed_counter = 0
-generated_counter = -1
-req_in_queue_counter = 0
-req_in_sys_counter = 0
-totat_counter = 0
-Kchannel1_counter = 0
-Kchannel2_counter = 0
-
-current_state = state2100
-ev1 = False
-ev2 = False
-for i in range(iters_num):
-    if current_state == state2100:
-
-        req_in_sys_counter += 1
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 0
-        generated_counter += 1
-
-        state2100_counter += 1
-        if event(pi1):
-            current_state = state1100
-        else:
-            current_state = state1001
-
-    elif current_state == state1001:
-
-        req_in_sys_counter += 1
-        req_in_queue_counter += 0
-        Kchannel1_counter += 0
-        Kchannel2_counter += 1
-        generated_counter += 0
-
-        state1001_counter += 1
-        if event(pi2):
-            current_state = state2101
-        else:
-            current_state = state2100
-            processed_counter += 1
-
-    elif current_state == state1100:
-
-        req_in_sys_counter += 1
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 0
-        generated_counter += 0
-
-        state1100_counter += 1
-        if event(pi1):
-            current_state = state0100
-        else:
-            current_state = state2101
-    elif current_state == state2101:
-
-        req_in_sys_counter += 2
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 1
-        generated_counter += 1
-
-        state2101_counter += 1
-        ev1 = event(pi1)
-        ev2 = event(pi2)
-        if not ev1 and not ev2:
-            current_state = state1101
-        elif ev1 and not ev2:
-            current_state = state1011
-        elif not ev1 and ev2:
-            current_state = state1100
-
-            processed_counter += 1
-
-        elif ev1 and ev2:
-            current_state = state1001
-
-            processed_counter += 1
-
-    elif current_state == state1011:
-
-        req_in_sys_counter += 2
-        req_in_queue_counter += 1
-        Kchannel1_counter += 0
-        Kchannel2_counter += 1
-        generated_counter += 0
-
-        state1011_counter += 1
-        if event(pi2):
-            current_state = state2111
-        else:
-            current_state = state2101
-
-            processed_counter += 1
-
-    elif current_state == state0100:
-
-        req_in_sys_counter += 1
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 0
-        generated_counter += 0
-
-        generated_counter += 1
-        state0100_counter += 1
-        if event(pi1):
-            current_state = state0100
-        else:
-            current_state = state2101
-    elif current_state == state1111:
-
-        req_in_sys_counter += 3
-        req_in_queue_counter += 1
-        Kchannel1_counter += 1
-        Kchannel2_counter += 1
-        generated_counter += 0
-
-        state1111_counter += 1
-        ev1 = event(pi1)
-        ev2 = event(pi2)
-        if not ev1 and not ev2:
-            current_state = state2111
-        elif ev1 and not ev2:
-            current_state = state2111
-        elif not ev1 and ev2:
-            current_state = state2101
-
-            processed_counter += 1
-
-        elif ev1 and ev2:
-            current_state = state2111
-
-            processed_counter += 1
-
-    elif current_state == state0101:
-
-        req_in_sys_counter += 2
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 1
-        generated_counter += 0
-
-        state0101_counter += 1
-        ev1 = event(pi1)
-        ev2 = event(pi2)
-        if not ev1 and not ev2:
-            current_state = state0101
-        elif ev1 and not ev2:
-            current_state = state2111
-        elif not ev1 and ev2:
-            current_state = state0100
-
-            processed_counter += 1
-
-        elif ev1 and ev2:
-            current_state = state2101
-
-            processed_counter += 1
-
-    elif current_state == state2111:
-
-        req_in_sys_counter += 3
-        req_in_queue_counter += 1
-        Kchannel1_counter += 1
-        Kchannel2_counter += 1
-        generated_counter += 1
-
-        state2111_counter += 1
-        ev1 = event(pi1)
-        ev2 = event(pi2)
-        if not ev1 and not ev2:
-            current_state = state1111
-        elif ev1 and not ev2:
-            current_state = state1101
-        elif not ev1 and ev2:
-            current_state = state1011
-
-            processed_counter += 1
-
-        elif ev1 and ev2:
-            current_state = state1011
-
-            processed_counter += 1
-
-    elif current_state == state1101:
-
-        req_in_sys_counter += 2
-        req_in_queue_counter += 0
-        Kchannel1_counter += 1
-        Kchannel2_counter += 1
-        generated_counter += 0
-
-        state1101_counter += 1
-        ev1 = event(pi1)
-        ev2 = event(pi2)
-        if not ev1 and not ev2:
-            current_state = state0101
-        elif ev1 and not ev2:
-            current_state = state0100
-        elif not ev1 and ev2:
-            current_state = state2111
-
-            processed_counter += 1
-
-        elif ev1 and ev2:
-            current_state = state2101
-
-            processed_counter += 1
-
-
-    print(current_state)
-
-totat_counter = state2100_counter + state1001_counter + state1100_counter + state2101_counter \
-                + state1011_counter + state0100_counter + state1111_counter + state0101_counter + \
-                state2111_counter + state1101_counter
-
-
-Q = processed_counter / generated_counter
-Pdenied = 1 - Q
-Lqueue = req_in_queue_counter / iters_num
-Lsys = req_in_sys_counter / iters_num
-A = processed_counter / iters_num
-Wqueue = Lqueue / A
-Wsys = Lsys / A
-Pblocked = (state0100_counter + state0101_counter) / totat_counter
-lambd = 0.5 * (1-Pblocked)
-Kchannel1 = Kchannel1_counter / totat_counter
-Kchannel2 = Kchannel2_counter / totat_counter
-
-print('================================================================')
-print('Statistics:')
-
-print(f'2100: {state2100_counter}\t|{state2100_counter / totat_counter}\t|')
-print(f'1001: {state1001_counter}\t|{state1001_counter / totat_counter}\t|')
-print(f'1100: {state1100_counter}\t|{state1100_counter / totat_counter}\t|')
-print(f'2101: {state2101_counter}\t|{state2101_counter / totat_counter}\t|')
-print(f'1011: {state1011_counter}\t|{state1011_counter / totat_counter}\t|')
-print(f'0100: {state0100_counter}\t|{state0100_counter / totat_counter}\t|')
-print(f'1111: {state1111_counter}\t|{state1111_counter / totat_counter}\t|')
-print(f'0101: {state0101_counter}\t|{state0101_counter / totat_counter}\t|')
-print(f'2111: {state2111_counter}\t|{state2111_counter / totat_counter}\t|')
-print(f'1101: {state1101_counter}\t|{state1101_counter / totat_counter}\t|')
-
-print('================================================================')
-print(f'Processed counter: {processed_counter}')
-print(f'Generated counter: {generated_counter}')
-print(f'Requests in queue counter: {req_in_queue_counter}')
-print(f'Requests in system counter: {req_in_sys_counter}')
-print(f'Kchannel1 counter: {Kchannel1_counter}')
-print(f'Kchannel1 counter: {Kchannel2_counter}')
-print(f'A: {A}')
-print(f'Q: {Q}')
-print(f'Pdenied: {1 - Q}')
-print(f'Lqueue: {Lqueue}')
-print(f'Lsys: {Lsys}')
-print(f'Pblocked: {Pblocked}')
-print(f'Kchannel1: {Kchannel1}')
-print(f'Kchannel2: {Kchannel2}')
-print(f'Wqueue: {Wqueue}')
-print(f'Wsys: {Wsys}')
+import numpy
+import random
+
+
+def simulate_teoriya():
+    q1 = 0.6
+    q2 = 0.6
+    p1 = 1 - q1
+    p2 = 1 - q2
+
+    # some defines for clearness
+    pp = q1 * q2
+    pq = q1 * p2
+    qp = p1 * q2
+    qq = p1 * p2
+
+    Matrix = numpy.array([[1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],  # P1
+                          [1., -1., q2, 0., 0., 0., 0., 0., 0., 0., 0., 0.],  # P2
+                          [0., q1, -1., 0., pp, 0., 0., 0., 0., 0., 0., 0.],  # P3
+                          [0., p1, 0., -1., qp, 0., 0., 0., 0., 0., 0., 0.],  # P4
+                          [0., 0., p2, q1, -1., q1, q2, pp, 0., pp, 0., 0.],  # P5
+                          [0., 0., 0., p1, 0., (p1 - 1), 0., qp, 0., qp, 0., 0.],  # P6
+                          [0., 0., 0., 0., pq, 0., -1., 0., (pp + pq), 0., 0., 0.],  # P7
+                          [0., 0., 0., 0., qq, 0., 0., -1., qp, 0., 0., 0.],  # P8
+                          [0., 0., 0., 0., 0., 0., p2, pq, -1., pq, (pp + pq), (pp + pq)],  # P9
+                          [0., 0., 0., 0., 0., 0., 0., qq, 0., (qq - 1), qp, qp],  # P10
+                          [0., 0., 0., 0., 0., 0., 0., 0., qq, 0., -1., 0.],  # P11
+                          [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., qq, (qq - 1)]  # P12
+                          ])
+
+    Vector = numpy.array([1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
+    P = numpy.linalg.solve(Matrix, Vector)
+    print('Teoria: \n\n')
+
+    for i in range(len(P) - 1): print('P' + str(i + 1) + ': ' + str(P[i + 1]))
+    print(sum(P))
+    print('\n')
+    P1 = P[0]
+    P2 = P[1]
+    P3 = P[2]
+    P4 = P[3]
+    P5 = P[4]
+    P6 = P[5]
+    P7 = P[6]
+    P8 = P[7]
+    P9 = P[8]
+    P10 = P[9]
+    P11 = P[10]
+    P12 = P[11]
+
+    Pbl = P6 + P10 + P12
+    print('P bl: ', Pbl)
+
+    K1 = (P2 + P4 + P5 + P6 + P8 + P9 + P10 + P11 + P12)
+    print('K1: ', K1)
+
+    K2 = (P3 + P5 + P7 + P8 + P9 + P10 + P11 + P12)
+    print('K2: ', K2)
+
+    A = (q2 * K2)
+    print('A: ', A)
+
+    q = A / (0.5 * (1 - Pbl))
+    print('Q: ', q)
+
+    Potk = 1 - q
+    print('P otk: ', Potk)
+
+    Lo = (P7 + P9 + P11 + P12)
+    print('L o: ', Lo)
+
+    Lc = (P2 + P3 + P4 + 2 * P5 + 2 * P6 + 2 * P7 + 2 * P8 + 3 * P9 + 3 * P10 + 3 * P11 + 4 * P12)
+    print('L c: ', Lc)
+
+    Wc = Lc / (0.5 * (1 - Pbl))
+    print('W c: ', Wc)
+
+    Wo = Lo / (0.5 * (1 - Pbl))
+    print('W o: ', Wo)
+
+
+def simulate_praktika():
+    Times = 1_000_000
+
+    q1 = 0
+    t = 0
+
+    P1_v = 0.4
+    P2_v = 0.4
+
+    Q1_v = 1 - P1_v
+    Q2_v = 1 - P2_v
+
+    state = "1000"  # P1
+
+    P1000 = 0
+    P2100 = 0
+    P1001 = 0
+    P1100 = 0
+    P2101 = 0
+    P0100 = 0
+    P1011 = 0
+    P1101 = 0
+    P2111 = 0
+    P0101 = 0
+    P1111 = 0
+    P0111 = 0
+
+    A = 0
+    K1 = 0
+    K2 = 0
+    Lc = 0
+    Lo = 0
+    Pbl = 0
+    gen = 0
+
+    for i in range(Times):
+        q1 = random.uniform(0.0, 1) >= P1_v
+        t = random.uniform(0.0, 1) >= P2_v
+
+        if (state[0] == '0'):
+            Lc += 1
+            Pbl += 1
+
+        if (state[1] == '1'):
+            Lc += 1
+            K1 += 1
+
+        if (state[2] == '1'):
+            Lc += 1
+            Lo += 1
+
+        if (state[3] == '1'):
+            Lc += 1
+            K2 += 1
+            if (t):
+                A += 1
+
+        # P1
+        if (state == "1000"):
+            P1000 += 1
+            gen += 1
+            state = "2100"
+            continue
+
+        # P2
+        if (state == "2100"):
+            P2100 += 1
+            if (q1):  # q1
+                state = "1001"
+            if (not q1):  # p1
+                state = "1100"
+            continue
+
+        # P3
+        if (state == "1001"):
+            P1001 += 1
+            gen += 1
+            if (t):  # t
+                state = "2100"
+            if (not t):  # p2
+                state = "2101"
+            continue
+
+        # P4
+        if (state == "1100"):
+            P1100 += 1
+            gen += 1
+            if (q1):  # q1
+                state = "2101"
+            if (not q1):  # p1
+                state = "0100"
+            continue
+
+        # P5
+        if (state == "2101"):
+            P2101 += 1
+            if (q1 and t):  # q1*t
+                state = "1001"
+            if (q1 and not t):  # q1*p2
+                state = "1011"
+            if (not q1 and t):  # p1*t
+                state = "1100"
+            if (not q1 and not t):  # p1*p2
+                state = "1101"
+            continue
+
+        # P6
+        if (state == "0100"):
+            P0100 += 1
+            if (q1):  # q1
+                state = "2101"
+            if (not q1):  # p1
+                state = "0100"
+            continue
+
+        # P7
+        if (state == "1011"):
+            P1011 += 1
+            gen += 1
+            if (t):  # t
+                state = "2101"
+            if (not t):  # p2
+                state = "2111"
+            continue
+
+        # P8
+        if (state == "1101"):
+            P1101 += 1
+            gen += 1
+            if (q1 and t):  # q1*t
+                state = "2101"
+            if (q1 and not t):  # q1*p2
+                state = "2111"
+            if (not q1 and t):  # p1*t
+                state = "0100"
+            if (not q1 and not t):  # p1*p2
+                state = "0101"
+            continue
+
+        # P9
+        if (state == "2111"):
+            P2111 += 1
+            if (q1 and t):  # q1*t
+                state = "1011"
+            if (q1 and not t):  # q1*p2
+                state = "1011"
+            if (not q1 and t):  # p1*t
+                state = "1101"
+            if (not q1 and not t):  # p1*p2
+                state = "1111"
+            continue
+
+        # P10
+        if (state == "0101"):
+            P0101 += 1
+            if (q1 and t):  # q1*t
+                state = "2101"
+            if (q1 and not t):  # q1*p2
+                state = "2111"
+            if (not q1 and t):  # p1*t
+                state = "0100"
+            if (not q1 and not t):  # p1*p2
+                state = "0101"
+            continue
+
+        # P11
+        if (state == "1111"):
+            P1111 += 1
+            gen += 1
+            if (q1 and t):  # q1*t
+                state = "2111"
+            if (q1 and not t):  # q1*p2
+                state = "2111"
+            if (not q1 and t):  # p1*t
+                state = "0101"
+            if (not q1 and not t):  # p1*p2
+                state = "0111"
+            continue
+
+        # P12
+        if (state == "0111"):
+            P0111 += 1
+            if (q1 and t):  # q1*t
+                state = "2111"
+            if (q1 and not t):  # q1*p2
+                state = "2111"
+            if (not q1 and t):  # p1*t
+                state = "0101"
+            if (not q1 and not t):  # p1*p2
+                state = "0111"
+            continue
+
+    P2 = P2100 / Times
+    P3 = P1001 / Times
+    P4 = P1100 / Times
+    P5 = P2101 / Times
+    P6 = P0100 / Times
+    P7 = P1011 / Times
+    P8 = P1101 / Times
+    P9 = P2111 / Times
+    P10 = P0101 / Times
+    P11 = P1111 / Times
+    P12 = P0111 / Times
+
+    print("Simulation praktika: ", "\n")
+    ##print("P1: ", P1)
+    print("P1: ", P2)
+    print("P2: ", P3)
+    print("P3: ", P4)
+    print("P4: ", P5)
+    print("P5: ", P6)
+    print("P6: ", P7)
+    print("P7: ", P8)
+    print("P8: ", P9)
+    print("P9: ", P10)
+    print("P10: ", P11)
+    print("P11: ", P12)
+
+    lambda_ = (gen)
+
+    print("\nPbl: ", (Pbl / Times))
+
+    print("K1: ", K1 / Times)
+
+    print("K2: ", K2 / Times)
+
+    print("A: ", (A / Times))
+
+    print("Q: ", (A / lambda_))
+
+    print("Potk: ", (1 - (A / lambda_)))
+
+    print("Lo: ", (Lo / Times))
+
+    print("Lc: ", (Lc / Times))
+
+    print("Wc: ", (Lc / lambda_))
+
+    print("Wo: ", (Lo / lambda_))
+
+
+def main():
+    simulate_teoriya()
+    simulate_praktika()
+
+
+main()
