@@ -83,7 +83,7 @@ def simulate_praktika():
     Times = 1_000_000
 
     q1 = 0
-    t = 0
+    q2 = 0
 
     P1_v = 0.4
     P2_v = 0.4
@@ -116,7 +116,7 @@ def simulate_praktika():
 
     for i in range(Times):
         q1 = random.uniform(0.0, 1) >= P1_v
-        t = random.uniform(0.0, 1) >= P2_v
+        q2 = random.uniform(0.0, 1) >= P2_v
 
         if (state[0] == '0'):
             Lc += 1
@@ -133,7 +133,7 @@ def simulate_praktika():
         if (state[3] == '1'):
             Lc += 1
             K2 += 1
-            if (t):
+            if (q2):
                 A += 1
 
         # P1
@@ -156,9 +156,9 @@ def simulate_praktika():
         if (state == "1001"):
             P1001 += 1
             gen += 1
-            if (t):  # t
+            if (q2):  # t
                 state = "2100"
-            if (not t):  # p2
+            if (not q2):  # p2
                 state = "2101"
             continue
 
@@ -175,13 +175,13 @@ def simulate_praktika():
         # P5
         if (state == "2101"):
             P2101 += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*q2
                 state = "1001"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "1011"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*q2
                 state = "1100"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "1101"
             continue
 
@@ -198,9 +198,9 @@ def simulate_praktika():
         if (state == "1011"):
             P1011 += 1
             gen += 1
-            if (t):  # t
+            if (q2):  # q2
                 state = "2101"
-            if (not t):  # p2
+            if (not q2):  # p2
                 state = "2111"
             continue
 
@@ -208,39 +208,39 @@ def simulate_praktika():
         if (state == "1101"):
             P1101 += 1
             gen += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*t
                 state = "2101"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "2111"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*t
                 state = "0100"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "0101"
             continue
 
         # P9
         if (state == "2111"):
             P2111 += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*t
                 state = "1011"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "1011"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*t
                 state = "1101"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "1111"
             continue
 
         # P10
         if (state == "0101"):
             P0101 += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*t
                 state = "2101"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "2111"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*t
                 state = "0100"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "0101"
             continue
 
@@ -248,26 +248,26 @@ def simulate_praktika():
         if (state == "1111"):
             P1111 += 1
             gen += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*q2
                 state = "2111"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "2111"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*q2
                 state = "0101"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "0111"
             continue
 
         # P12
         if (state == "0111"):
             P0111 += 1
-            if (q1 and t):  # q1*t
+            if (q1 and q2):  # q1*t
                 state = "2111"
-            if (q1 and not t):  # q1*p2
+            if (q1 and not q2):  # q1*p2
                 state = "2111"
-            if (not q1 and t):  # p1*t
+            if (not q1 and q2):  # p1*t
                 state = "0101"
-            if (not q1 and not t):  # p1*p2
+            if (not q1 and not q2):  # p1*p2
                 state = "0111"
             continue
 
