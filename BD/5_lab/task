@@ -26,11 +26,22 @@ group by category;
 
 -- 3. Для каждого сотрудника вывести все запчасти,
 --    которые он использовал реже всего в ремонте (но использовал хотя бы раз)
-
-SELECT full_name, min(used_name) FROM used
+SELECT full_name, used_name FROM used
 
 JOIN repair r on used.repair_repair_id = r.id
 JOIN made_by mb on r.id = mb.repair_repair_id
 JOIN employee e on mb.employee_employee_id = e.id
 
-group by full_name;
+group by full_name, used_name
+
+HAVING count(used_name) = (Select min(used.count) from (
+    SELECT count(used_name) from used
+        JOIN repair r on used.repair_repair_id = r.id
+        JOIN made_by mb on r.id = mb.repair_repair_id
+        JOIN employee em on mb.employee_employee_id = em.id
+        where em.full_name = e.full_name
+    )
+
+    used)
+
+order by full_name
