@@ -1,492 +1,402 @@
 #include <msp430.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <math.h>
+#include<stdio.h>
 
-volatile int display_mode = 0; //0 -NORMAL, 1 - MIRROR
+typedef unsigned char byte;
+typedef unsigned short word;
+
+#define SYMB_COUNT 12
+
+#define SYMB_LENGTH 7
+#define SYMB_WIDTH 4
+#define GAP 4
+
+#define LEFT_LIMIT -9999
+#define RIGHT_LIMIT +9999
+
+#define DATA 0
+#define COMMAND 1
+
+#define MAX_DIGIT_COUNT 4
+#define MAX_SYMB_COUNT 5
+
+#define START_POINT_X 90
+#define START_POINT_Y 5
+
+#define SCROLL_STEP 8
+
+#define PAGE_WIDTH 8
+
+//шаблоны цифр и знаков
+byte templates[SYMB_COUNT][SYMB_LENGTH] = {
+		{0x0F, 0x09, 0x09, 0x09, 0x09, 0x09, 0x0F}, //0
+		{0x0E, 0x04, 0x04, 0x04, 0x04, 0x07, 0x06}, //1
+		{0x0F, 0x01, 0x01, 0x06, 0x08, 0x08, 0x0F}, //2
+		{0x0F, 0x08, 0x08, 0x0E, 0x08, 0x08, 0x0F}, //3
+		{0x08, 0x08, 0x08, 0x0F, 0x09, 0x09, 0x09}, //4
+		{0x0F, 0x08, 0x08, 0x0F, 0x01, 0x01, 0x0F}, //5
+		{0x0F, 0x09, 0x09, 0x0F, 0x01, 0x01, 0x0F}, //6
+		{0x01, 0x01, 0x02, 0x04, 0x08, 0x08, 0x0F}, //7
+		{0x06, 0x09, 0x09, 0x06, 0x09, 0x09, 0x06}, //8
+		{0x0F, 0x08, 0x08, 0x0F, 0x09, 0x09, 0x0F}, //9
+		{0x00, 0x06, 0x06, 0x0F, 0x06, 0x06, 0x00}, //+
+		{0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00}  //-
+};
+
+//текущее число для вывода на экран
+int currentNumber = 8659;
+//копия текущего числа для вывода на экран(в процессе вывода оно будет редактироваться)
+int tempCurrentNumber = 0;
+//слагаемое для изменения числа по нажатию кнопки
+const int jump = -921;
+//значение текущего скроллинга
+int curScroll = 0;
 
 
-#define SET_COLUMN_ADDRESS_LSB        0x00
-#define SET_COLUMN_ADDRESS_MSB        0x10
-#define SET_PAGE_ADDRESS              0xB0
+//настройка кнопок
+void setupButtons() {
+	//P1 BIT7 - S1
+	P1OUT |= BIT7;
+	P1REN |= BIT7;
+	P1IFG &= ~BIT7;
+	P1IES |= BIT7;
+	P1IE |= BIT7;
 
-unsigned char whatChecking = 0;
-unsigned char isRxReady = 0;
-unsigned char isTxReady = 0;
-unsigned char isBusy = 1;
+	//S2
+	P2OUT |= BIT2;
+	P2REN |= BIT2;
+	P2IES |= BIT2;
+	P2IFG &= ~BIT2;
+	P2IES |= BIT2;
+	P2IE |= BIT2;
+}
+
+//запись данных либо команд в контроллер
+void writeToController(byte* info, int length, int actionType) {
+	P7OUT &= ~BIT4; // выбор ведомого
+	if (actionType == DATA) {
+		P5OUT |= BIT6;  // выбираем перессылку данных
+	}
+	else if (actionType == COMMAND) {
+		P5OUT &= ~BIT6;  // выбираем перессылку команд
+	}
+
+	int i = 0;
+	for (i = 0; i < length; i++) {
+		while (!(UCB1IFG & UCTXIFG)) {} // ждём флага освобождения сдвигового регистра (данные из сдвигового регистра передаются ведомому по линии UCxSIMO)
+		UCB1TXBUF = *(info + i); // записываем данные в буффер (сдвиговый регистр), одновременно сбрасывается UCTXIFG
+	}
+
+	while (UCB1STAT & UCBUSY) {}// пока UCBUSY установлен происходит передача данных
+
+	//заканчиваем работу с ведомым
+	P7OUT |= BIT4;
+}
+
+//установка текущего адреса для записи
+void setAddress(byte page, byte column) {
+	//работаем с областью памяти, попадающей на дисплей
+	if (column > 101) {
+		column = 100;
+	}
+	// if(page>7){
+	// 	page=7;
+	// }
+	//формируем адрес текущей страницы
+	byte selectPageCom[1];
+	selectPageCom[0] = 0xB0 + page;
+
+	//формируем адрес текущего столбца
+	byte selectColCom[2];
+	byte msb = 0x10 + ((column & 0xF0) >> 4);
+	byte lsb = 0x00 + (column & 0x0F);
+	selectColCom[0] = lsb;
+	selectColCom[1] = msb;
+
+	writeToController(selectPageCom, 1, COMMAND);
+	writeToController(selectColCom, 2, COMMAND);
+}
+//очистка дисплея
+void clearScreen() {
+	byte page;
+	byte column;
+	byte zero[1];
+	zero[0]=0x00;
+
+	for (page=0; page < 8; page++) {
+		setAddress(page, 0);
+		for (column=0; column < 132; column++) {
+			writeToController(zero, 1, DATA);
+		}
+	}
+}
+
+//подсчёт разрядов в числе
+int calcDigits() {
+	int count = 1;
+	int temp = currentNumber;
+	while (temp/=10) {
+		++count;
+	}
+	return count;
+}
+
+//возведение в степень
+int pow(int a, int b){
+	if(b==0){
+		return 1;
+	}
+	else{
+		int temp=a;
+		int i=0;
+		for(;i<b-1;i++){
+			temp*=a;
+		}
+		return temp;
+	}
+}
+
+//извлечение разряда из числа
+int extractDigit(int currentDigitPos, int symbCount){
+	int decimalPos = symbCount - currentDigitPos;//позиция текущего разряда
+	int delitel = pow(10,decimalPos-1);//делитель для извлечения текущего разряда
+	int digit = tempCurrentNumber / delitel;//текущий разряд
+	tempCurrentNumber = tempCurrentNumber - delitel*digit;//убираем текущий разряд из числа
+	return digit;
+}
+//вывод числа на дисплей
+void printNumber() {
+	tempCurrentNumber = currentNumber>0?currentNumber:currentNumber*(-1);
+	//считаем количество разрядов и символов(учитывается знак)
+	byte digitCount = calcDigits();
+	byte symbCount = digitCount+1;
+
+	//находим первую задействованную страницу
+	int y = START_POINT_Y + curScroll * SCROLL_STEP - 1;
+	byte firstUsedPage = 0;
+	while(y/PAGE_WIDTH){
+		y-=PAGE_WIDTH;
+		++firstUsedPage;
+	}
+	//находим последнюю задействованную страницу
+	y = START_POINT_Y +  curScroll * SCROLL_STEP + symbCount*SYMB_WIDTH + (symbCount-1)*GAP-1;
+	byte lastUsedPage = 0;
+	while(y/PAGE_WIDTH){
+		y-=PAGE_WIDTH;
+		++lastUsedPage;
+	}
+	//начинаем с первой задействованной страницы
+	byte curPage=firstUsedPage;
+
+	byte zero[1];
+	zero[0]=0x00;
+
+	byte curColumn = 0;
+	byte curDigit = 0;
+	byte curSymb[SYMB_LENGTH];
 
 
-// Pins from MSP430 connected to LCD
-#define CD              BIT6
-#define CS              BIT4
-#define RST             BIT7
-#define BACKLT          BIT6
-#define SPI_SIMO        BIT1
-#define SPI_CLK         BIT3
+	for(;curPage<lastUsedPage;curPage++){
+		setAddress(curPage,0);
+		int innerIndx = 0;
+		//если текущий символ знак
+		if(curDigit == 0){
+			//если -
+			if(currentNumber<0){
+				int i=0;
+				//получаем "столбцы" нашего знака
+				for(;i<SYMB_LENGTH;i++){
+					curSymb[i]=templates[11][i];//-
+				}
+			}
+			//если +
+			else{
+				int i=0;
+				//получаем "столбцы" нашего знака
+				for(;i<SYMB_LENGTH;i++){
+					curSymb[i]=templates[10][i];//+
+				}
+			}
+
+		}
+		//если текущий символ цифра
+		else{
+			//извлекаем цифру из числа
+			int digit = extractDigit(curDigit,symbCount);
+			int i=0;
+			//получаем "столбцы" нашей цифры
+			for(;i<SYMB_LENGTH;i++){
+				curSymb[i]=templates[digit][i];//digit
+			}
+		}
+		//сдвигаем на четыре разряда, чтобы записать разряд в нижнюю половину страницы
+		int i=0;
+		for(;i<SYMB_LENGTH;i++){
+			curSymb[i]<<=4;
+		}
+
+		//заполняем дисплей информацией
+		for(curColumn=0;curColumn<132;curColumn++){
+			//если попали в область, занимаемую нашим числом
+			if(curColumn > START_POINT_X && curColumn < START_POINT_X + SYMB_LENGTH + 1){
+				byte columnVal[1];
+				columnVal[0]=curSymb[innerIndx];
+				++innerIndx;
+				writeToController(columnVal, 1, DATA);
+			}
+			//остальная облать заполняется нулями
+			else
+				writeToController(zero, 1, DATA);
+
+		}
+		//переходим к следующему разряду
+		++curDigit;
+	}
+}
+//настройка дисплея и SPI
+void initialization(byte* commands) {
+	P5DIR |= BIT7;// конфигурируем для работы с дисплеем
+	//устанавливаем сигнал сброса 
+	P5OUT &= ~BIT7;
+	P5OUT |= BIT7;
+
+	//выбираем ведомого(начинаем его настройку)
+	P7DIR |= BIT4;
+	P7OUT &= ~BIT4;
+
+	//устанавливаем режим команд
+	P5DIR |= BIT6;//необходимая настройка
+	P5OUT &= ~BIT6;//непосредственно устанавливаем режим команд
+
+	P4SEL |= BIT1; // передача данных LCD_SIMO
+	P4DIR |= BIT1;
+
+	P4SEL |= BIT3; // синхросигнал SCLK
+	P4DIR |= BIT3;
+
+	// настраиваем питание подсветки
+	P7DIR |= BIT6;
+	P7OUT |= BIT6;
+	P7SEL &= ~BIT6;
+
+	//заканчиваем настройку ведомого
+	P7OUT |= BIT4;
 
 
-#define NONE                        0
-#define READ_X_AXIS_DATA            0x18
-#define READ_Y_AXIS_DATA            0x1C
-#define READ_Z_AXIS_DATA            0x20
+	UCB1CTL1 |= UCSWRST;//настройка регистров управления SPI всегда начинается с сброса	
+	UCB1CTL0 = UCCKPH + UCMSB + UCMST + UCMODE_0 + UCSYNC; // фаза Ти(захват по первому перепаду изменение по второму) , первым следует старший бит (старший (полу-)байт записывается первым), master mode, 3-pin SPI, синхронный режим
+	//UCB1CTL0 &= ~UCCKPL;
+	UCB1CTL1 = UCSSEL__SMCLK + UCSWRST;// источником тактирования для ucb используем smclk, всегда устанавливаем состояние "сброс" при программном конфигурировании
+	
 
-double CONVERT = 9.8*100*100/1000/2.54;
-int MAPPING_VALUES[] = { 4571, 2286, 1142, 571, 286, 143, 71 };
+	UCB1BR0 = 0x02; // младший байт делителя частоты,  "UCBxBR0 + UCBxBR1 * 256 = формирует значение делителя частоты UCBRx"
+	UCB1BR1 = 0; //  старший байт делителя частоты
 
-
-uint8_t init_cmds[] =
-                    {0x40, //установка начальной строки скроллинга = 0 (без скроллинга)
-                     0xA1, //зеркальный режим адресации столбцов
-                     0xC0, //нормальный режим адресации строк
-                     0xA4, //запрет режима включения всех пикселей (на экран отображается содержимое памяти)
-                     0xA6, //отключение инверсного режима экрана
-                     0xA2, //смещение напряжения делителя 1/9
-                     0x2F, //включение питания усилителя, регулятора и повторителя
-                     0x27, //установка контраста
-                     0x81,
-                     0x10,
-                     0xFA, //установка температурной компенсации -0.11%/°С
-                     0x90,
-                     0xAF  //включение экрана
-                    };
-
-int f_abs(int a){
-    if(a > 0)
-        return a;
-    return -a;
+	UCB1CTL1 &= ~UCSWRST; // снимаем "блокировку сбросом", устанавливая ноль
+	UCB1IFG &= ~UCRXIFG; //снимаем флаг прерывания (который устанавливается при получении входным сдвиг. регистром данных)
+	//устанавливаем "начальную конфигурацию дисплея"
+	writeToController(commands, 13, COMMAND);
 }
 
 
 
-uint8_t distance = 0x00;
-uint8_t digit_0[] = {0b11111111, 0b11111111, 0b00000011, 0b00000011, 0b11111111, 0b11111111,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011111, 0b00011111};
+#pragma vector=PORT1_VECTOR // сложение
+__interrupt void INT1() {
+	P1IE &= ~BIT7;
+	volatile unsigned int time = 1500;
+	while (time) { --time; }
 
-uint8_t digit_1[] = {0b00000011, 0b00000011, 0b11111111, 0b11111111, 0b00000011, 0b00000011,
-                     0b00000000, 0b00000000, 0b00011111, 0b00011111, 0b00011000, 0b00000000};
-
-uint8_t digit_2[] = {0b11100011, 0b11100011, 0b01100011, 0b01100011, 0b01111111, 0b01111111,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011000, 0b00011000};
-
-uint8_t digit_3[] = {0b11111111, 0b11111111, 0b01100011, 0b01100011, 0b01100011, 0b01100011,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011000, 0b00011000};
-
-uint8_t digit_4[] = {0b11111111, 0b11111111, 0b11000000, 0b11000000, 0b11000000, 0b11000000,
-                     0b00011111, 0b00011111, 0b00000001, 0b00000001, 0b00011111, 0b00011111};
-
-uint8_t digit_5[] = {0b01111111, 0b01111111, 0b01100011, 0b01100011, 0b11100011, 0b11100011,
-                     0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00011111, 0b00011111};
-
-uint8_t digit_6[] = {0b01111111, 0b01111111, 0b01100011, 0b01100011, 0b11111111, 0b11111111,
-                     0b00011000, 0b00011000, 0b00011000, 0b00011000, 0b00011111, 0b00011111};
-
-uint8_t digit_7[] = {0b11111111, 0b11111111, 0b00000000, 0b00000000, 0b00000000, 0b00000000,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011000, 0b00011000};
-
-uint8_t digit_8[] = {0b11111111, 0b11111111, 0b11100011, 0b11100011, 0b11111111, 0b11111111,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011111, 0b00011111};
-
-uint8_t digit_9[] = {0b11111111, 0b11111111, 0b01100011, 0b01100011, 0b11100011, 0b11100011,
-                     0b00011111, 0b00011111, 0b00011000, 0b00011000, 0b00011111, 0b00011111};
-
-uint8_t plus_sign[] = {0b11100000, 0b11100000, 0b11111100, 0b11111100, 0b11100000, 0b11100000,
-                       0b00000000, 0b00000000, 0b00000111, 0b00000111, 0b00000000, 0b00000000};
-
-uint8_t minus_sign[] = {0b11100000, 0b11100000, 0b11100000, 0b11100000, 0b11100000, 0b11100000,
-                        0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000};
-
-
-
-void startTimerA1(){
-    TA1CCTL0 = CCIE;
-    TA1CCR0 = 5240;
-    TA1EX0 = TAIDEX_4;
-    TA1CTL = TASSEL_2 | ID__4 | MC_1 | TACLR;
-}
-
-void stopTimerA1() {
-    TA1CCTL0 &= ~CCIE;
-    TA1CTL = MC_0;
+	if (!(P1IN & BIT7)) {
+		// Изменяем значение числа в соответствии с вариантом
+		currentNumber += jump;
+		if (currentNumber < LEFT_LIMIT) {
+			currentNumber = RIGHT_LIMIT + (currentNumber - LEFT_LIMIT);
+		}
+		clearScreen();
+		printNumber();
+	}
+	
+	P1IFG &= ~BIT7;
+	P1IE |= BIT7;
 }
 
 
-void init_LCD_pins()
-{
-    P5DIR |= BIT7;   //LCD_RST
-    P5SEL &= ~BIT7;
+//текущий "уровень" скроллинга
+byte scrollingLevel=1;
 
-    P5OUT &= ~BIT7;
+#pragma vector=PORT2_VECTOR // скроллинг
+__interrupt void INT2() {
+	P2IE &= ~BIT2;
+	volatile unsigned int time = 2500;
+	while (time) { --time; }
 
-    __delay_cycles(25000);
-    P5OUT |= BIT7;
-    __delay_cycles(125000);
+	if (!(P2IN & BIT2)) {
 
-    P4DIR |= BIT1; //SIMO data
-    P4SEL |= BIT1;
+		byte scrollCom[1];
+		byte curScroll=0;
+		//в зависимомти от текущего уровня скроллинга выбираем само значение для скроллинга
+		switch(scrollingLevel){
+		case 0:
+			curScroll = 0;
+			break;
+		case 1:
+			curScroll = 57;
+			break;
+		case 2:
+			curScroll = 49;
+			break;
 
-    P4DIR |= BIT3;  //SCLK
-    P4SEL |= BIT3;
+		}
+		//формируем команду для записи в контроллер дисплея
+		scrollCom[0]=0x40+curScroll;
+		//устанавливаем значение скроллинга в контроллер дисплея
+		writeToController(scrollCom, 1, COMMAND);
+		clearScreen();
+		printNumber();
 
-    P5DIR |= BIT6; // LCD_D/C  0- comand 1- data
-    P5SEL &= ~BIT6;
+		//меняем текущий уровень скроллинга
+		if(scrollingLevel==2)
+			scrollingLevel=0;
+		else
+			++scrollingLevel;
+	}
 
-    P7DIR |= BIT4;  // LCD_CS choose device(=0)
-    P7SEL &= ~BIT4;
-    P7OUT |= BIT4;
-
-    P7DIR |= BIT6; //LCD_BL_EN backlight power
-    P7SEL &= ~BIT6;
-    P7OUT |= BIT6;
-
-}
-
-void init_USCI()
-{
-    UCB1CTL1 |= UCSWRST; //enable program reset 0 , 1 - logical
-
-    UCB1CTL0 |= UCMSB; // order of transfer (  0 — LSB, 1- MSB)
-    UCB1CTL0 |= UCMST; // mode 0 — Slave, 1 – Master
-
-    UCB1CTL0 |= UCCKPH; // phase of tackt 0 - change on first capture on second, 1 - on the contrary
-
-    UCB1CTL1 |= UCSSEL1; // source for tact impuls SMCLK
-
-    UCB1CTL1 &= ~UCSWRST;  // en program reset
-}
-
-
-
-
-
-void clear_LCD(void)
-{
-    uint8_t LcdData[] = { 0x00 };
-    uint8_t p, c;
-
-    for (p = 0; p < 8; p++)
-    {
-        int pa = p;
-        int ca = 0;
-        uint8_t cmd[1];
-        cmd[0] = SET_PAGE_ADDRESS + pa;
-        uint8_t H = 0b00000000;
-        uint8_t L = 0b00000000;
-        uint8_t ColumnAddress[] = { SET_COLUMN_ADDRESS_MSB, SET_COLUMN_ADDRESS_LSB };
-        // Separate Command Address to low and high
-        L = (ca & 0b00001111);
-        H = (ca & 0b11110000);
-        H = (H >> 4);
-
-        ColumnAddress[0] = SET_COLUMN_ADDRESS_LSB + L;
-        ColumnAddress[1] = SET_COLUMN_ADDRESS_MSB + H;
-
-
-        Dogs102x6_writeCommand(cmd, 1); // set page address
-
-        Dogs102x6_writeCommand(ColumnAddress, 2);// set column address
-        for (c = 0; c < 132; c++)
-        {
-            Dogs102x6_writeData(LcdData, 1);
-        }
-    }
-}
-
-void display_symbol(uint8_t *digit, uint8_t column)
-{
-    uint8_t page_cmd;
-    uint8_t column_cmd[2];
-    uint8_t column_LSB;
-    uint8_t column_MSB;
-    int p;
-
-
-    for(p=0; p < 2; p++)
-    {
-        column_LSB = 0b00001111 & column;
-        column_MSB = (0b11110000 & column) >> 4;
-
-        page_cmd = 0b10110000 + p; //
-        column_cmd[0] = 0b00000000 + column_LSB;
-        column_cmd[1] = 0b00010000 + column_MSB;
-
-        Dogs102x6_writeCommand(&page_cmd, 1);
-        Dogs102x6_writeCommand(column_cmd, 2);
-
-        Dogs102x6_writeData(&distance, 2);
-
-        Dogs102x6_writeData(digit +  6 * (p), 6);
-     }
+	P2IFG &= ~BIT2;
+	P2IE |= BIT2;
 }
 
 
-
-
-void display_num(long int number)
-{
-    long divided_num = number;
-    int digit;
-    int digit_count = 0;
-
-
-
-    while(divided_num != 0)
-    {
-        digit = f_abs(divided_num % 10);
-
-        switch(digit)
-        {
-            case 0:
-                display_symbol(digit_0, digit_count * 8);
-                break;
-            case 1:
-                display_symbol(digit_1, digit_count * 8 );
-                break;
-            case 2:
-                display_symbol(digit_2, digit_count * 8 );
-                break;
-            case 3:
-                display_symbol(digit_3, digit_count * 8 );
-                break;
-            case 4:
-                display_symbol(digit_4, digit_count * 8 );
-                break;
-            case 5:
-                display_symbol(digit_5, digit_count * 8 );
-                break;
-            case 6:
-                display_symbol(digit_6, digit_count * 8 );
-                break;
-            case 7:
-                display_symbol(digit_7, digit_count * 8 );
-                break;
-            case 8:
-                display_symbol(digit_8, digit_count * 8 );
-                break;
-            case 9:
-                display_symbol(digit_9, digit_count * 8 );
-                break;
-        }
-
-        divided_num = (divided_num / 10);
-
-        digit_count++;
-    }
-
-    if(number > 0)
-    {
-        display_symbol(plus_sign, digit_count * 8 );
-    }
-    else if(number < 0)
-    {
-        display_symbol(minus_sign, digit_count * 8);
-    }
-}
-
-inline long int parseProjectionByte(uint8_t projectionByte) {
-    uint8_t BITx[] = { BIT6, BIT5, BIT4, BIT3, BIT2, BIT1, BIT0 };
-    int i = 0;
-    long int projectionValue = 0;
-    int isNegative = projectionByte & BIT7;
-    for (; i < 7; i++) {
-        if (isNegative) {
-            projectionValue += (BITx[i] & projectionByte) ? 0 : MAPPING_VALUES[i];
-        }else{
-            projectionValue += (BITx[i] & projectionByte) ? MAPPING_VALUES[i] : 0;
-        }
-    }
-    projectionValue *= isNegative ? -1 : 1;
-    return projectionValue;
-}
-
-#pragma vector = PORT2_VECTOR
-__interrupt void PORT2_ACCEL_ISR(void)
-{
-    volatile uint8_t zProjectionByte = CMA3000_writeCommand(READ_Z_AXIS_DATA, NONE);
-
-    volatile int zAxisProjection = parseProjectionByte(zProjectionByte);
-    zAxisProjection += 215;
-
-    volatile long int inchPerSecondSquaredMultiplied = zAxisProjection * CONVERT;
-
-    clear_LCD();
-    display_num(zAxisProjection);
-
-    if(-1000 <= zAxisProjection && zAxisProjection <= -866){
-        P1OUT |= BIT4;
-    }else{
-        P1OUT &= ~BIT4;
-    }
-
-}
-
-void Dogs102x6_writeData(uint8_t* sData, uint8_t i)
-{
-    P7OUT &= ~CS;
-    P5OUT |= CD;
-
-    while (i)
-    {
-        while (!(UCB1IFG & UCTXIFG)); // is ts buffer ready to write data
-        UCB1TXBUF = *sData;
-        sData++;
-        i--;
-    }
-
-
-    while (UCB1STAT & UCBUSY);
-    UCB1RXBUF;
-
-    P7OUT |= CS;
-}
-
-// sCmd - array of commands, i - amount of commands to run
-void Dogs102x6_writeCommand(uint8_t* sCmd, uint8_t i)
-{
-    // set command mode
-    P7OUT &= ~CS;
-    P5OUT &= ~CD;
-
-    while (i)
-    {
-        while (!(UCB1IFG & UCTXIFG));
-
-        UCB1TXBUF = *sCmd;
-
-        sCmd++;
-        i--;
-    }
-
-    // Wait for all TX/RX to finish
-    while (UCB1STAT & UCBUSY);
-    // Dummy read to empty RX buffer and clear any overrun conditions
-    UCB1RXBUF;
-
-    // back to data mode
-    P7OUT |= CS;
-}
-
-void CMA3000_init(void) {
-    P2DIR  &= ~BIT5;    // mode: input
-    P2OUT  |=  BIT5;
-    P2REN  |=  BIT5;    // enable pull up resistor
-    P2IE   |=  BIT5;    // interrupt enable
-    P2IES  &= ~BIT5;    // process on interrupt's front
-    P2IFG  &= ~BIT5;    // clear interrupt flag
-    // set up cma3000 (CBS - Chip Select (active - 0))
-    P3DIR  |=  BIT5;    // mode: output
-    P3OUT  |=  BIT5;    // disable cma3000 SPI data transfer
-    // set up ACCEL_SCK (SCK - Serial Clock)
-    P2DIR  |=  BIT7;    // mode: output
-    P2SEL  |=  BIT7;    // clk is  UCA0CLK
-    // Setup SPI communication
-    P3DIR  |= (BIT3 | BIT6);    // Set MOSI and PWM pins to output mode
-    P3DIR  &= ~BIT4;        // Set MISO to input mode
-    P3SEL  |= (BIT3 | BIT4);    // Set mode : P3.3 - UCA0SIMO , P3.4 - UCA0SOMI
-    P3OUT  |= BIT6;     // Power cma3000
-    UCA0CTL1 = UCSSEL_2 | UCSWRST;
-    UCA0BR0 = 0x30;
-    UCA0BR1 = 0x0;
-    UCA0CTL0 = UCCKPH & ~UCCKPL | UCMSB | UCMST | UCSYNC | UCMODE_0;
-    UCA0CTL1 &= ~UCSWRST;
-    // dummy read from REVID
-    CMA3000_writeCommand(0x04, NONE);
-    __delay_cycles(1250);
-    // write to CTRL register
-    CMA3000_writeCommand(0x0A, BIT2 | BIT4);
-    __delay_cycles(25000);
-}
-// byte_one - frame part 1 (8-2: address, 1: R/W, 0: always 0)
-// byte_two - frame part 2 (data when W or anything when R)
-uint8_t CMA3000_writeCommand(uint8_t firstByte, uint8_t secondByte) {
-    char miso_data;
-
-    P3OUT &= ~BIT5;
-    P2IE &= ~BIT5;
-
-    miso_data = UCA0RXBUF; //FREE RECEIVER BUFF(unknown data) and set UCRXIFG --> 0
-
-    startTimerA1();
-
-    whatChecking = 1;
-    __bis_SR_register(LPM0_bits + GIE);
-    UCA0TXBUF = firstByte;
-    isTxReady = 0;
-
-    whatChecking = 2;
-    __bis_SR_register(LPM0_bits + GIE);
-    miso_data = UCA0RXBUF; //FREE RECEIVER BUFF (readed data - PORST + 010) and set UCRXIFG --> 0
-    isRxReady = 0;
-
-    whatChecking = 1;
-    __bis_SR_register(LPM0_bits + GIE);
-    UCA0TXBUF = secondByte;
-    isTxReady = 0;
-
-    whatChecking = 2;
-    __bis_SR_register(LPM0_bits + GIE);
-    miso_data = UCA0RXBUF; //FREE RECEIVER BUFF (data from mosi_byte1 address) and set UCRXIFG --> 0
-                               //WHY FOR WRITE OPERATION NEEDED
-    isRxReady = 0;
-
-    whatChecking = 3;
-    __bis_SR_register(LPM0_bits + GIE);
-    isBusy = 1;
-
-
-    stopTimerA1();
-    P3OUT |= BIT5;
-    P2IE |= BIT5;
-
-    return miso_data;
-}
-
-#pragma vector = TIMER1_A0_VECTOR
-__interrupt void TIMER_1 (void) {
-    if(whatChecking == 1)
-    {
-            if(UCA0IFG & UCTXIFG)
-            {
-                isTxReady = 1;
-                __bic_SR_register_on_exit(LPM0_bits + GIE);
-            }
-        }
-        else if(whatChecking == 2)
-        {
-            if(UCA0IFG & UCRXIFG)
-            {
-                isRxReady = 1;
-                __bic_SR_register_on_exit(LPM0_bits + GIE);
-            }
-        }
-        else if(whatChecking == 3)
-        {
-            if(!(UCA0STAT & UCBUSY))
-            {
-                isBusy = 0;
-                __bic_SR_register_on_exit(LPM0_bits + GIE);
-            }
-        }
-}
 
 int main(void) {
-    WDTCTL = WDTPW | WDTHOLD;
+	WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
-    P1DIR |= BIT4; //LED 7
-    P1OUT &= ~BIT4;
+	setupButtons();
 
-    init_LCD_pins();
+	// Список команд для инициализации дисплея
+	byte controllerInitData[] = {
+			0x40,//начальная строка скроллинга (0)
+			0xA1,//зеркальный режим адресации столбцов
+			0xC0,//нормальный режим адресации строк
+			0xA4,//отображение памяти на экран
+			0xA6,//отключение инверсного режима экрана
+			0xA2,//смещение напряжения делителя 1/9
+			0x2F,//включение питания усилителя, регулятора, повторителя
+			0x27,//три команды установки контраста
+			0x81,
+			0x0F,
+			0xFA,//две команды установки температурной компенсации -0.11%/Celsium
+			0x90,
+			0xAF,//включение экрана
+	};
 
-    init_USCI();
+	// Непосредственно инициализация дисплея, его очистка и вывод "дефолтного" числа
+	initialization(controllerInitData);
+	clearScreen();
+	printNumber();
 
-    Dogs102x6_writeCommand(init_cmds, 13);
+	__bis_SR_register(GIE);
+	__no_operation();
 
-
-    clear_LCD();
-    CMA3000_init();
-    __bis_SR_register(LPM0_bits + GIE);
-    __no_operation();
-
-    return 0;
+	return 0;
 }
 
 
