@@ -1,0 +1,45 @@
+
+-- 1. Добавить нового клиента, который привез автомобиль на ремонт, а также сам факт ремонта
+
+set autocommit = 0;
+START TRANSACTION;
+INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Иванов Иван Иванович', 'ivanov@mail.ru', '80291111111');
+INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Проверка состояния', '300', DATE '2021-11-19');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('7', '7');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('7', '4');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('2','3');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('7','1');
+COMMIT;
+
+SELECT client_full_name, repair_name FROM repair
+join orders o on repair.id = o.repair_repair_id
+join client c on o.client_client_id = c.id
+where client_full_name ilike '%Иванов Иван Иванович%'
+ORDER BY client_full_name;
+
+-- 2. Уменьшить запасы деталей на складе на то количество, которое было использовано сегодня для ремонта
+
+set autocommit = 0;
+START TRANSACTION;
+UPDATE spare_part
+set "Number" = ("Number" - 10)
+FROM spare_part
+join repair on "Number"
+where repair.date_of_completion >= current_date - INTERVAL '2 YEAR';
+COMMIT;
+
+SELECT "Number", date_of_completion from repair
+join used u on repair.id = u.repair_repair_id
+join spare_part sp on u.spare_part_spare_part_id = sp.id
+group by  date_of_completion, "Number";
+--детали, которые использовали в промежутке -номер
+
+-- 3. Удалить все типы, для которых отсутствуют детали
+
+set autocommit = 0;
+START TRANSACTION;
+delete from type
+    using spare_part
+    where type.id = spare_part.id and "Number" <= 66666;
+COMMIT;
+--удаляю типы, если количество делалей меньше числа
