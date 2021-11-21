@@ -1,45 +1,57 @@
-
 -- 1. Добавить нового клиента, который привез автомобиль на ремонт, а также сам факт ремонта
 
-set autocommit = 0;
 START TRANSACTION;
 INSERT INTO client (client_full_name, "e-mail", contact_phone) VALUES ('Иванов Иван Иванович', 'ivanov@mail.ru', '80291111111');
 INSERT INTO repair (repair_name, cost, date_of_completion) VALUES ('Проверка состояния', '300', DATE '2021-11-19');
-INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('7', '7');
-INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('7', '4');
-INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('2','3');
-INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('7','1');
-COMMIT;
-
+INSERT INTO spare_part ("Number", manufacturer, part_code) VALUES ('88777', 'RU', '77788');
+INSERT INTO "consists of" (repair_repair_id, spare_part_spare_part_id) VALUES ('12', '6');
+INSERT INTO made_by (repair_repair_id, employee_employee_id) VALUES ('12','1');
+INSERT INTO type (description, category) VALUES  ('Внешний вид', 'Внешний вид');
+INSERT INTO maked_by (spare_part_spare_part_id, type_type_id) VALUES ('6','6');
+INSERT INTO orders (client_client_id, repair_repair_id) VALUES ('14', '12');
+INSERT INTO used (instrument, used_name, instrument_code, repair_repair_id, spare_part_spare_part_id) VALUES ('Bosch', 'Перчатки', '55555', '12', '6');
+INSERT INTO go_to (branch_branch_id, client_client_id) VALUES ('3', '14');
 SELECT client_full_name, repair_name FROM repair
 join orders o on repair.id = o.repair_repair_id
 join client c on o.client_client_id = c.id
 where client_full_name ilike '%Иванов Иван Иванович%'
 ORDER BY client_full_name;
+COMMIT;
 
 -- 2. Уменьшить запасы деталей на складе на то количество, которое было использовано сегодня для ремонта
 
-set autocommit = 0;
 START TRANSACTION;
-UPDATE spare_part
-set "Number" = ("Number" - 10)
-FROM spare_part
-join repair on "Number"
-where repair.date_of_completion >= current_date - INTERVAL '2 YEAR';
-COMMIT;
+
+UPDATE spare_part sp
+SET "Number" = "Number" - 100
+FROM repair r
+WHERE sp.id = r.id and r.date_of_completion <= current_date - INTERVAL '1 YEAR';
 
 SELECT "Number", date_of_completion from repair
 join used u on repair.id = u.repair_repair_id
 join spare_part sp on u.spare_part_spare_part_id = sp.id
 group by  date_of_completion, "Number";
+COMMIT;
 --детали, которые использовали в промежутке -номер
 
 -- 3. Удалить все типы, для которых отсутствуют детали
-
-set autocommit = 0;
 START TRANSACTION;
-delete from type
-    using spare_part
-    where type.id = spare_part.id and "Number" <= 66666;
+create temporary table types_to_delete as
+select distinct type.id from type
+left join maked_by mb on type.id = mb.type_type_id
+join spare_part sp on sp.id = mb.spare_part_spare_part_id
+where "Number" >= '66666';      -- проверять знаки
+
+delete from maked_by
+where type_type_id not in (select * from types_to_delete);
+select * from maked_by;
+
+delete from spare_part
+where "Number" in (select * from types_to_delete);
+
+drop table types_to_delete;
+SELECT description, "Number" from spare_part
+join maked_by mb on spare_part.id = mb.spare_part_spare_part_id
+join type t on mb.type_type_id = t.id;
+rollback;
 COMMIT;
---удаляю типы, если количество делалей меньше числа
