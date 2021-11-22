@@ -398,7 +398,7 @@ void accelInitialization() {
     __delay_cycles(1000);
 
     // Записываем данные в регистр управления акселерометра
-    accel_rw(CTRL, BIT4 | BIT2 | BIT1, WRITE); //BIT2 | BIT1 - установка 40 Гц, BIT4 - запрещаем I2C
+    accel_rw(CTRL, BIT4 | BIT2, WRITE); //BIT2 | BIT1 - установка 400 Гц, BIT4 - запрещаем I2C
     __delay_cycles(1000);
 }
 
@@ -479,10 +479,10 @@ __interrupt void PORT2_ACCEL_ISR(void)
         // по заранее вычисленным значениям находим попадание или не попадание в диапазон градусов (-30..-150)
         // знак определяем по знаку проекции на ось Y (т.е используется плоскость OzOy)
         if(LOWER_VALUE <= real_z && real_z <= TOP_VALUE && real_y<0){
-            P1OUT |= BIT1;
+            P1OUT |= BIT5;
         }
         else{
-            P1OUT &= ~BIT1;
+            P1OUT &= ~BIT5;
         }
     }
 }
@@ -493,8 +493,8 @@ int main(void) {
     WDTCTL = WDTPW | WDTHOLD;   // Stop watchdog timer
 
     // настраиваем диод для индикации
-    P1DIR |= BIT1;
-    P1OUT &= BIT1;
+    P1DIR |= BIT5; // diod 8
+    P1OUT &= BIT5; //
 
     // Список команд для инициализации дисплея
     uint8_t screenInitData[] = {
