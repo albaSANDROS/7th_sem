@@ -398,7 +398,7 @@ void accelInitialization() {
     __delay_cycles(1000);
 
     // Записываем данные в регистр управления акселерометра
-    accel_rw(CTRL, BIT4 | BIT2, WRITE); //BIT2 | BIT1 - установка 400 Гц, BIT4 - запрещаем I2C
+    accel_rw(CTRL, BIT7 | BIT4 | BIT2, WRITE); //BIT2 - установка 400 Гц, BIT4 - запрещаем I2C, BIT 7 - 2g
     __delay_cycles(1000);
 }
 
@@ -433,7 +433,7 @@ long getRealValue(uint8_t value){
     uint8_t sign = value & 0x80;
 
     // представление "весов" битов регистра из акселерометра
-    short templates[] = {4571, 2286, 1142, 571, 286, 143, 71};
+    short templates[] = {1142, 571, 286, 143, 71, 36, 18};
     uint8_t i = 0;
     uint8_t selector = 0x40;
     long result = 0;
