@@ -428,6 +428,23 @@ __interrupt void TIMER_ISR (void)
 	}
 }
 
+long get_angle(long projection)
+{
+	double precised_projection = projection;
+
+	// from mili g to g
+	double ratio = precised_projection / 1000;
+
+	ratio = ratio > 1 ? 1 : ratio < -1 ? -1 : ratio;
+
+	volatile double angle = acos(ratio);
+
+	// convert rad to deg
+	angle *= 57.3;
+
+	return (long)angle;
+}
+
 long getRealValue(uint8_t value){
     // извлекаем знак
     uint8_t sign = value & 0x80;
@@ -472,13 +489,16 @@ __interrupt void PORT2_ACCEL_ISR(void)
         real_y = getRealValue(accel_y);
         real_z = getRealValue(accel_z);
 
-        currentNumber = ((real_z-300) / 100.0);// 100 - коррекция
+        currentNumber = (real_y * 10);
         clearScreen();
         printNumber();
+	    
+	long angle = get_angle(real_y);
+	angle = real_z > 0 ? angle : angle * (-1); 
 
         // по заранее вычисленным значениям находим попадание или не попадание в диапазон градусов (-30..-150)
-        // знак определяем по знаку проекции на ось Y (т.е используется плоскость OzOy)
-        if(LOWER_VALUE <= real_z && real_z <= TOP_VALUE && real_y<0){
+        // знак определяем по знаку проекции на ось Z (т.е используется плоскость OyOz)
+        if((angle >= 0) && (angle <= 180)){
             P1OUT |= BIT5;
         }
         else{
