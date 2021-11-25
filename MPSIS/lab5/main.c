@@ -496,7 +496,7 @@ __interrupt void PORT2_ACCEL_ISR(void)
 	long angle = get_angle(real_y);
 	angle = real_z > 0 ? angle : angle * (-1); 
 
-        // по заранее вычисленным значениям находим попадание или не попадание в диапазон градусов (-30..-150)
+        
         // знак определяем по знаку проекции на ось Z (т.е используется плоскость OyOz)
         if((angle >= 0) && (angle <= 180)){
             P1OUT |= BIT5;
