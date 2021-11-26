@@ -1,3 +1,4 @@
+
 -- 1. Добавить нового клиента, который привез автомобиль на ремонт, а также сам факт ремонта
 
 START TRANSACTION;
@@ -23,14 +24,19 @@ COMMIT;
 START TRANSACTION;
 
 UPDATE spare_part sp
-SET "Number" = "Number" - 100
-FROM repair r
-WHERE sp.id = r.id and r.date_of_completion <= current_date - INTERVAL '1 YEAR';
+SET "Number" = "Number" - (select count(repair.id)
+from repair inner join "consists of" "c o" on repair.id = "c o".repair_repair_id WHERE sp.id = "c o".spare_part_spare_part_id and
+                  repair.id = "c o".repair_repair_id and repair.date_of_completion <= current_date - INTERVAL '3 YEAR')
 
-SELECT "Number", date_of_completion from repair
+FROM repair r
+WHERE sp.id = r.id and r.date_of_completion <= current_date - INTERVAL '3 YEAR';
+
+SELECT category, sum("Number"), date_of_completion from repair
 join used u on repair.id = u.repair_repair_id
 join spare_part sp on u.spare_part_spare_part_id = sp.id
-group by  date_of_completion, "Number";
+join maked_by mb on sp.id = mb.spare_part_spare_part_id
+join type t on mb.type_type_id = t.id
+group by  category, date_of_completion;
 COMMIT;
 --детали, которые использовали в промежутке -номер
 
@@ -40,18 +46,20 @@ create temporary table types_to_delete as
 select distinct type.id from type
 left join maked_by mb on type.id = mb.type_type_id
 join spare_part sp on sp.id = mb.spare_part_spare_part_id
-where "Number" >= '66666';      -- проверять знаки
+where "Number" < '1' and sp.id = type.id;
 
 delete from maked_by
-where type_type_id not in (select * from types_to_delete);
+where type_type_id in (select * from types_to_delete);
 select * from maked_by;
 
-delete from spare_part
-where "Number" in (select * from types_to_delete);
+delete from type
+where id in (select * from types_to_delete);
+select * from type;
 
 drop table types_to_delete;
-SELECT description, "Number" from spare_part
+SELECT description, sum("Number") from spare_part
 join maked_by mb on spare_part.id = mb.spare_part_spare_part_id
-join type t on mb.type_type_id = t.id;
+join type t on mb.type_type_id = t.id
+group by description;
 rollback;
 COMMIT;
