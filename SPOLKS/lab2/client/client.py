@@ -136,6 +136,7 @@ def handle_disconnect():
     print("wait server")
     time.sleep(1)
 
+
 def download(file_name, request):
     global WINDOW_SIZE
 
@@ -159,8 +160,12 @@ def download(file_name, request):
 
     i = 0
     progress_bar = 10
+
+
     while (1):
         try:
+
+            client.settimeout(2)
             data = client.recvfrom(BUFFER_SIZE)[0]
             if data:
                 if data == b'EOF':
@@ -189,7 +194,12 @@ def download(file_name, request):
             f.close()
             client.close()
             os._exit(1)
-
+        except client.timeout:
+            print
+            "Session Timed Out"
+        except socket.timeout:
+            print
+            "Session Timed Out"
     f.close()
     print("\n" + file_name + " was downloaded")
 
@@ -285,13 +295,14 @@ while (is_valid_address == False):
         except socket.error:
             print("Please, input valid address")
             is_valid_address = False
-
+        except client.timeout:
+            print
+            "Session Timed Out"
 
 show_start_message()
 server_address = (HOST, PORT)
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client.connect(server_address)
-
 
 
 
